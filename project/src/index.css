@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --neon-green: #00ff88;
+    --neon-green-dim: #00cc6a;
+    --neon-cyan: #00e5ff;
+    --bg-darkest: #0a0e0d;
+    --bg-dark: #111817;
+    --bg-card: #1a2422;
+    --bg-card-hover: #243431;
+    --border-subtle: #2a3835;
+    --text-primary: #f0fdf4;
+    --text-secondary: #8b9b96;
+    --text-muted: #5a6b66;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    overscroll-behavior: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+
+  .neon-text {
+    color: var(--neon-green);
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+  }
+
+  .neon-border {
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.1), inset 0 0 20px rgba(0, 255, 136, 0.05);
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.25);
+  }
+
+  .glass-card {
+    background: linear-gradient(145deg, rgba(26, 36, 34, 0.9), rgba(17, 24, 23, 0.9));
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .glass-card-hover:hover {
+    background: linear-gradient(145deg, rgba(36, 52, 49, 0.95), rgba(26, 36, 34, 0.95));
+    border-color: rgba(0, 255, 136, 0.2);
+  }
+
+  .gradient-neon {
+    background: linear-gradient(135deg, #00ff88 0%, #00e5ff 100%);
+  }
+
+  .gradient-neon-text {
+    background: linear-gradient(135deg, #00ff88 0%, #00e5ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-dark {
+    background: linear-gradient(180deg, #0a0e0d 0%, #111817 100%);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-pulse-neon {
+    animation: pulseNeon 2s ease-in-out infinite;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseNeon {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.4); }
+}
+
+/* Leaflet dark theme overrides */
+.leaflet-container {
+  background: #0a0e0d !important;
+  border-radius: 1rem;
+}
+
+.leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.7);
+}
+
+.leaflet-control-zoom a {
+  background: #1a2422 !important;
+  color: #f0fdf4 !important;
+  border: 1px solid #2a3835 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #243431 !important;
+}
+
+.leaflet-bar {
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(10, 14, 13, 0.7) !important;
+  color: #5a6b66 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #8b9b96 !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3835;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a4a45;
+}
