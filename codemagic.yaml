@@ -1,6 +1,6 @@
 workflows:
 react-vite-workflow:
-name: React Vite Web Vuild
+name: React Vite Web Build
 environment:
 node: latest
 scripts:
@@ -9,5 +9,5 @@ script: npm install
 name: Build project
 script: npm run build
 artifacts:
-dist/**/*
+-dist/**/*
 
