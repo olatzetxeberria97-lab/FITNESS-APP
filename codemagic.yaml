@@ -2,7 +2,7 @@ workflows:
 react-vite-workflow:
 name: React Vite Web Vuild
 environment:
-node:latest
+node: latest
 scripts:
 name: Install dependencies
 script: npm install
