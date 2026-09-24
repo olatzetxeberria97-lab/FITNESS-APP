@@ -10,3 +10,4 @@ script: npm install
 script: npm run build
 artifacts:
 - dist/**/*
+
