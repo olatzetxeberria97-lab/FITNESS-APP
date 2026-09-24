@@ -1,12 +1,12 @@
 workflows:
-react-vite-workflow:
-name: React Vite Web Build
-environment:
-node: latest
-scripts:
-- name: Install dependencies
-script: npm install
-- name: Build project
-script: npm run build
-artifacts:
-- dist/**/*
+  react-vite-workflow:
+    name: React Vite Web Build
+    environment:
+      node: latest
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Build project
+        script: npm run build
+    artifacts:
+      - dist/**/*
