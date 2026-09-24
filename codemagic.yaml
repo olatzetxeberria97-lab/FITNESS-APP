@@ -1,12 +1,54 @@
 workflows:
-  react-vite-workflow:
-    name: React Vite Web Build
+  ios-workflow:
+    name: iOS Build & Archive
+    max_build_duration: 60
     environment:
-      node: latest
+      vars:
+        # Codemagic will read these from the UI/CLI — do NOT hardcode secrets here.
+        # Set these in Codemagic's UI under Environment Variables:
+        #   APP_STORE_CONNECT_ISSUER_ID
+        #   APP_STORE_CONNECT_KEY_ID
+        #   APP_STORE_CONNECT_PRIVATE_KEY
+        #   CERTIFICATE_PRIVATE_KEY  (p8 signing key, base64-encoded)
+      xcode: latest
+      cocoapods: default
     scripts:
-      - name: Install dependencies
-        script: npm install
-      - name: Build project
-        script: npm run build
+      - name: Install npm dependencies
+        script: |
+          npm ci
+      - name: Build web assets
+        script: |
+          npm run build
+      - name: Add iOS platform
+        script: |
+          npx cap add ios || true
+      - name: Sync web assets to iOS
+        script: |
+          npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install
+      - name: Build IPA and archive
+        script: |
+          xcodebuild archive \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/PULSE.xcarchive \
+            CODE_SIGN_STYLE=Automatic
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/PULSE.xcarchive \
+            -exportOptionsPlist export-options.plist \
+            -exportPath $CM_BUILD_DIR/ipa-output
     artifacts:
-      - dist/**/*
+      - $CM_BUILD_DIR/ipa-output/*.ipa
+      - $CM_BUILD_DIR/PULSE.xcarchive
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        submit_to_testflight: true
