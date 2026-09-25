@@ -22,7 +22,3 @@ workflows:
       - name: Construir archivo IPA para iOS
         script: |
           xcode-project build-and-archive --project ios/App/App.xcodeproj
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
