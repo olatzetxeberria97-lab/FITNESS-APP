@@ -1,27 +1,16 @@
-workflows:
-  ios-workflow:
-    name: Compilación y archivo de iOS
-    max_build_duration: 60
-    instance_type: mac_mini_m2
-    environment:
-      cocoapods: default
-    scripts:
-      - name: Install npm dependencies for Ionic project
+scripts:
+      - name: Instalar dependencias web
         script: |
           npm install
-      - name: Cocoapods installation
+      - name: Construir la aplicación web
+        script: |
+          npm run build
+      - name: Crear plataforma iOS
+        script: |
+          npx cap add ios
+          npx cap sync ios
+      - name: Instalar Pods y construir IPA
         script: |
           cd ios/App && pod install
-      - name: Compile web code to dist folder
-        script: npm run build
-      - name: Update dependencies and copy web assets to native project
-        script: |
-          npx cap sync ios
-      - name: Build ipa for distribution
-        script: |
           cd $CM_BUILD_DIR/ios/App
-          xcode-project build-ipa \
-            --workspace "App.xcworkspace" \
-            --scheme "App"
-    artifacts:
-      - ios/App/build/ios/ipa/*.ipa
+          xcode-project build-ipa --workspace App.xcworkspace --scheme App
