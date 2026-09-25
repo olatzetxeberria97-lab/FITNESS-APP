@@ -16,15 +16,14 @@ workflows:
       - name: Construir aplicación web
         script: |
           npm run build
-      - name: Añadir plataforma iOS
+      - name: Añadir y sincronizar plataforma iOS
         script: |
-          npx cap add ios
-      - name: Sincronizar Capacitor
-        script: |
+          npx cap add ios || true
           npx cap sync ios
       - name: Construir IPA para iOS
         script: |
-          xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+          cd ios/App
+          xcode-project build-ipa --workspace App.xcworkspace --scheme App
     artifacts:
       - build/ios/ipa/*.ipa
       - ios/App/build/Default/*.ipa
