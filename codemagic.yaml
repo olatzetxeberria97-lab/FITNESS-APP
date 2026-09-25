@@ -22,6 +22,9 @@ workflows:
       - name: Construir aplicación web
         script: |
           npm run build
+      - name: Compilar binario de iOS
+        script: |
+          xcode-project build-binary --workspace ios/App/App.xcworkspace --scheme App
     artifacts:
       - build/ios/ipa/*.ipa
       - ios/App/build/Default/*.ipa
