@@ -1,16 +1,1 @@
-scripts:
-      - name: Instalar dependencias web
-        script: |
-          npm install
-      - name: Construir la aplicación web
-        script: |
-          npm run build
-      - name: Crear plataforma iOS
-        script: |
-          npx cap add ios
-          npx cap sync ios
-      - name: Instalar Pods y construir IPA
-        script: |
-          cd ios/App && pod install
-          cd $CM_BUILD_DIR/ios/App
-          xcode-project build-ipa --workspace App.xcworkspace --scheme App
+
