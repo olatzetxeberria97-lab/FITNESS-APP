@@ -4,19 +4,24 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
-      groups:
-        - apple_credentials
-      vars:
-        BUNDLE_ID: "com.olatz.fitnessapp"
       cocoapods: default
     scripts:
-      - name: Instalar dependencias y compilar web
+      - name: Install npm dependencies for Ionic project
         script: |
-          npm ci
-          npm run build
-    pkg:
-      capacitor:
-        app_directory: "."
+          npm install
+      - name: Cocoapods installation
+        script: |
+          cd ios/App && pod install
+      - name: Compile web code to dist folder
+        script: npm run build
+      - name: Update dependencies and copy web assets to native project
+        script: |
+          npx cap sync ios
+      - name: Build ipa for distribution
+        script: |
+          cd $CM_BUILD_DIR/ios/App
+          xcode-project build-ipa \
+            --workspace "App.xcworkspace" \
+            --scheme "App"
     artifacts:
-      - build/ios/ipa/*.ipa
-      - ios/App/build/Default/*.ipa
+      - ios/App/build/ios/ipa/*.ipa
