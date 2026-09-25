@@ -16,9 +16,11 @@ workflows:
       - name: Construir aplicación web
         script: |
           npm run build
-      - name: Añadir y sincronizar plataforma iOS de Capacitor
+      - name: Añadir plataforma iOS
         script: |
-          npx cap add ios || true
+          npx cap add ios
+      - name: Sincronizar Capacitor
+        script: |
           npx cap sync ios
       - name: Construir IPA para iOS
         script: |
