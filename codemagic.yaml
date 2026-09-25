@@ -13,6 +13,9 @@ workflows:
       - name: Instalar dependencias de npm
         script: |
           npm ci
+      - name: Añadir plataforma iOS
+        script: |
+          npx cap add ios || true
       - name: Sincronizar Capacitor y plataformas
         script: |
           npx cap sync ios
