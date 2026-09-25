@@ -13,15 +13,13 @@ workflows:
       - name: Instalar dependencias de npm
         script: |
           npm ci
-      - name: Añadir plataforma iOS
-        script: |
-          npx cap add ios || true
-      - name: Sincronizar Capacitor y plataformas
-        script: |
-          npx cap sync ios
       - name: Construir aplicación web
         script: |
           npm run build
+      - name: Añadir y sincronizar plataforma iOS de Capacitor
+        script: |
+          npx cap add ios || true
+          npx cap sync ios
       - name: Construir IPA para iOS
         script: |
           xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
