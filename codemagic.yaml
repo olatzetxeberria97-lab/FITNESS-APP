@@ -2,7 +2,7 @@ workflows:
   ios-build-and-archive:
     name: Compilación y archivo de iOS
     max_build_duration: 60
-    instance: mac_mini_m2
+    instance_type: mac_mini_m2
     environment:
       groups:
         - apple_credentials
@@ -23,4 +23,3 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        expire_beta_builds_before_publishing: false
