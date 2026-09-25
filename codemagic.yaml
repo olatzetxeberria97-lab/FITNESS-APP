@@ -22,6 +22,10 @@ workflows:
       - name: Construir aplicación web
         script: |
           npm run build
-      - name: Construir archivo IPA para iOS
-        script: |
-          xcode-project build-and-archive --project ios/App/App.xcodeproj
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - ios/App/build/Default/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
