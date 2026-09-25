@@ -1,5 +1,5 @@
 workflows:
-  ios-build-and-archive:
+  ios-workflow:
     name: Compilación y archivo de iOS
     max_build_duration: 60
     instance_type: mac_mini_m2
@@ -22,3 +22,7 @@ workflows:
       - name: Construir archivo IPA para iOS
         script: |
           xcode-project build-and-archive --project ios/App/App.xcodeproj
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
