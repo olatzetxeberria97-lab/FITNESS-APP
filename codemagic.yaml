@@ -10,20 +10,13 @@ workflows:
         BUNDLE_ID: "com.olatz.fitnessapp"
       cocoapods: default
     scripts:
-      - name: Instalar dependencias de npm
+      - name: Instalar dependencias y compilar web
         script: |
           npm ci
-      - name: Construir aplicación web
-        script: |
           npm run build
-      - name: Añadir y sincronizar plataforma iOS
-        script: |
-          npx cap add ios || true
-          npx cap sync ios
-      - name: Construir IPA para iOS
-        script: |
-          cd ios/App
-          xcode-project build-ipa --workspace App.xcworkspace --scheme App
+    pkg:
+      capacitor:
+        app_directory: "."
     artifacts:
       - build/ios/ipa/*.ipa
       - ios/App/build/Default/*.ipa
