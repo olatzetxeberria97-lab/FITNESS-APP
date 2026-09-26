@@ -1,1 +1,36 @@
-
+workflows:
+  ios-workflow:
+    name: Compilación y archivo de iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        - appstore_credentials
+      vars:
+        BUNDLE_ID: "com.olatz.fitnessapp"
+        APP_STORE_APPLE_ID: "YOUR_APPLE_ID"
+    scripts:
+      - name: Instalar dependencias
+        script: |
+          npm install
+      - name: Configurar versión y número de compilación automático
+        script: |
+          # Lee la versión de package.json y genera un build number único basado en la fecha y hora
+          VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUMBER=$(date +%Y%m%d%H%M)
+          echo "Configuring Marketing Version: $VERSION"
+          echo "Configuring Build Number: $BUILD_NUMBER"
+          
+          # Actualiza capacitor.config o los ficheros de iOS si es necesario
+          npx cap sync ios
+          
+          # Inyecta los valores en el proyecto Xcode usando agvtool si aplica, o mediante script
+          cd ios/App
+          agvtool new-marketing-version "$VERSION"
+          agvtool new-version -all "$BUILD_NUMBER"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: api_key
+        submit_to_app_store: false
