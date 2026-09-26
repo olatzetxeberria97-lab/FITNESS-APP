@@ -15,16 +15,13 @@ workflows:
           npm install
       - name: Configurar versión y número de compilación automático
         script: |
-          # Lee la versión de package.json y genera un build number único basado en la fecha y hora
           VERSION=$(node -p "require('./package.json').version")
           BUILD_NUMBER=$(date +%Y%m%d%H%M)
           echo "Configuring Marketing Version: $VERSION"
           echo "Configuring Build Number: $BUILD_NUMBER"
           
-          # Actualiza capacitor.config o los ficheros de iOS si es necesario
           npx cap sync ios
           
-          # Inyecta los valores en el proyecto Xcode usando agvtool si aplica, o mediante script
           cd ios/App
           agvtool new-marketing-version "$VERSION"
           agvtool new-version -all "$BUILD_NUMBER"
@@ -32,5 +29,5 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        auth: api_key
+        auth: integration
         submit_to_app_store: false
