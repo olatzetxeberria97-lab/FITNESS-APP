@@ -4,23 +4,18 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
-      integrations:
-        app_store_connect: appstore_credentials
       vars:
         BUNDLE_ID: "com.olatz.fitnessapp"
     scripts:
       - name: Instalar dependencias
         script: |
           npm install
-      - name: Configurar versión y número de compilación automático
+      - name: Configurar versión
         script: |
           VERSION=$(node -p "require('./package.json').version")
           BUILD_NUMBER=$(date +%Y%m%d%H%M)
-          echo "Configuring Marketing Version: $VERSION"
-          echo "Configuring Build Number: $BUILD_NUMBER"
-          
+          echo "Configuring Version: $VERSION"
           npx cap sync ios
-          
           cd ios/App
           agvtool new-marketing-version "$VERSION"
           agvtool new-version -all "$BUILD_NUMBER"
@@ -28,5 +23,4 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        auth: integration
         submit_to_app_store: false
