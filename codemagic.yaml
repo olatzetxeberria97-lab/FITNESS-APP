@@ -25,8 +25,8 @@ workflows:
           agvtool new-version -all "$BUILD_NUMBER"
       - name: Compilar aplicación iOS
         script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -derivedDataPath derived_data build
+          cd ios
+          xcodebuild -workspace App/App.xcworkspace -scheme App -configuration Release -derivedDataPath derived_data build
     artifacts:
       - ios/App/derived_data/Build/Products/Release-iphoneos/*.app
       - build/ios/ipa/*.ipa
