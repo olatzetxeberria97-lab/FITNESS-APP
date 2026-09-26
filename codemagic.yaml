@@ -15,7 +15,11 @@ workflows:
           VERSION=$(node -p "require('./package.json').version")
           BUILD_NUMBER=$(date +%Y%m%d%H%M)
           echo "Configuring Version: $VERSION"
+          
+          # Añade y sincroniza la plataforma de iOS de forma automática
+          npx cap add ios || true
           npx cap sync ios
+          
           cd ios/App
           agvtool new-marketing-version "$VERSION"
           agvtool new-version -all "$BUILD_NUMBER"
