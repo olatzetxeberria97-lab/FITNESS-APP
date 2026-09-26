@@ -9,24 +9,23 @@ workflows:
     scripts:
       - name: Instalar dependencias y compilar web
         script: |
-          npm install
-          npm run build || true
+              npm install
+              npm run build || true
       - name: Sincronizar Capacitor iOS
         script: |
-          npx cap add ios || true
-          npx cap sync ios
+              npx cap add ios || true
+              npx cap sync ios
       - name: Configurar versión
         script: |
-          VERSION=$(node -p "require('./package.json').version")
-          BUILD_NUMBER=$(date +%Y%m%d%H%M)
-          echo "Configuring Version: $VERSION"
-          cd ios/App
-          agvtool new-marketing-version "$VERSION"
-          agvtool new-version -all "$BUILD_NUMBER"
+              VERSION=$(node -p "require('./package.json').version")
+              BUILD_NUMBER=$(date +%Y%m%d%H%M)
+              echo "Configuring Version: $VERSION"
+              cd ios/App
+              agvtool new-marketing-version "$VERSION"
+              agvtool new-version -all "$BUILD_NUMBER"
       - name: Compilar aplicación iOS
         script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -derivedDataPath derived_data build
+              xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -derivedDataPath derived_data build
     artifacts:
       - ios/App/derived_data/Build/Products/Release-iphoneos/*.app
       - build/ios/ipa/*.ipa
