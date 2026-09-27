@@ -13,8 +13,9 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Sincronizar plataforma iOS
+      - name: Generar y sincronizar plataforma iOS
         script: |
+          npx cap add ios || true
           npx cap sync ios
       - name: Compilador proyecto Xcode
         script: |
