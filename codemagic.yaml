@@ -6,8 +6,6 @@ workflows:
     environment:
       vars:
         BUNDLE_ID: "com.olatz.fitnessapp"
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
     scripts:
       - name: Instalar dependencias web
         script: |
@@ -31,10 +29,7 @@ workflows:
             /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'PULSE necesita acceso a tu galería.'" "$PLIST" 2>/dev/null || true
             /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Utilizamos Face ID.'" "$PLIST" 2>/dev/null || true
           fi
-      - name: Compilar aplicación iOS
+      - name: Compilar proyecto Xcode
         script: |
-          xcodebuild-action build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
-    artifacts:
-      - build/ios/ipa/*.ipa
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO build
