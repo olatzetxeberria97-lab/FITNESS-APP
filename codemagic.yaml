@@ -10,6 +10,8 @@ workflows:
         BUNDLE_ID: "com.olatz.fitnessapp"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
+    integrations:
+      app_store_connect: Codemagic App Store Connect
     scripts:
       - name: Instalar dependencias web
         script: |
