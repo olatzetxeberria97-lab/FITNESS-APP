@@ -5,10 +5,9 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       groups:
-        - apple_credentials
+        - credenciales de Apple
       vars:
         BUNDLE_ID: "com.olatz.fitnessapp"
-      cocoapods: default
     scripts:
       - name: Instalar dependencias web
         script: |
@@ -20,11 +19,10 @@ workflows:
         script: |
           npx cap add ios
           npx cap sync ios
-      - name: - name: Inyectar versión y número de compilación
-  script: |
-    # Reemplaza el comando sed problemático por este:
-    find ios/App -name "project.pbxproj" -type f -exec sed -i '' 's/MARKETING_VERSION = .*/MARKETING_VERSION = 1.0.0;/g' {} +
-    find ios/App -name "project.pbxproj" -type f -exec sed -i '' 's/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = 20260927;/g' {} +
+      - name: Inyectar versión y número de compilación
+        script: |
+          find ios/App -name "project.pbxproj" -type f -exec sed -i '' 's/MARKETING_VERSION = .*/MARKETING_VERSION = 1.0.0;/g' {} +
+          find ios/App -name "project.pbxproj" -type f -exec sed -i '' 's/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = 20260927;/g' {} +
       - name: Inyectar permisos iOS en Info.plist
         script: |
           PLIST=ios/App/App/Info.plist
@@ -32,21 +30,7 @@ workflows:
             /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'PULSE necesita acceso a la cámara para que puedas subir fotos de tus entrenamientos y avatar.'" "$PLIST" 2>/dev/null || true
             /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'PULSE necesita acceso a tu galería para que puedas seleccionar fotos de tus entrenamientos y avatar.'" "$PLIST" 2>/dev/null || true
             /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Utilizamos Face ID para un acceso rápido y seguro a tu cuenta.'" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local.'" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :NSLocationAlwaysAndWhenInUseUsageDescription string 'PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local.'" "$PLIST" 2>/dev/null || true
           fi
-      - name: Configurar pantalla de inicio (Launch Screen)
+      - name: Publicar en TestFlight
         script: |
-          PLIST=ios/App/App/Info.plist
-          if [ -f "$PLIST" ]; then
-            /usr/libexec/PlistBuddy -c "Add :UILaunchScreen dict" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :UILaunchScreen:UIColorName string 'LaunchScreenColor'" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :UIViewControllerBasedStatusBarAppearance bool false" "$PLIST" 2>/dev/null || true
-          fi
-      - name: Instalar Pods y construir IPA
-        script: |
-          cd ios/App && pod install
-          cd $CM_BUILD_DIR/ios/App
-          xcode-project build-ipa --workspace App.xcworkspace --scheme App
-    artifacts:
-      - ios/App/build/ios/ipa/*.ipa
+          app-store-connect publish --ipa "$(find build -name "*.ipa")"
