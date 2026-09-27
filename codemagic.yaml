@@ -13,11 +13,9 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Forzar creación de plataforma iOS
-        script: |
-          npx cap init FitnessApp com.olatz.fitnessapp --web-dir dist --yes || true
-          npx cap add ios --force || true
-          npx cap sync ios
+      - name: Sincronizar plataforma iOS
+      script: |
+        npx cap sync ios
       - name: Compilador proyecto Xcode
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGN_ALLOWED=NO build
