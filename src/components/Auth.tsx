@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Activity, Eye, EyeOff, Loader2, Shield, Check, X, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Activity, Eye, EyeOff, Loader2, Shield, Check, X, Calendar, Mail, Fingerprint, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 type Mode = 'signin' | 'signup';
@@ -10,6 +10,9 @@ const CONSENT_ITEMS = [
   { key: 'ip', label: 'Propiedad intelectual', desc: 'Entiendo que conservo los derechos de mis contenidos y concedo a PULSE una licencia para mostrarlos dentro de la app.' },
   { key: 'conduct', label: 'Código de conducta', desc: 'Acepto las normas de la comunidad: respeto, sin spam, sin contenido ofensivo.' },
 ] as const;
+
+const BIOMETRIC_AVAILABLE_KEY = 'pulse_biometric_enabled';
+const BIOMETRIC_EMAIL_KEY = 'pulse_biometric_email';
 
 export default function Auth() {
   const [mode, setMode] = useState<Mode>('signup');
@@ -28,7 +31,73 @@ export default function Auth() {
     conduct: false,
   });
 
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+
   const allConsentsAccepted = CONSENT_ITEMS.every((item) => consents[item.key]);
+
+  useEffect(() => {
+    checkBiometricAvailability();
+    const stored = localStorage.getItem(BIOMETRIC_AVAILABLE_KEY);
+    if (stored === 'true') {
+      setBiometricEnabled(true);
+    }
+  }, []);
+
+  async function checkBiometricAvailability() {
+    try {
+      const cap = await import('@capacitor/core');
+      if (!cap.Capacitor.isNativePlatform()) return;
+      const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
+      const result = await BiometricAuth.checkBiometry();
+      if (result.isAvailable) {
+        setBiometricAvailable(true);
+      }
+    } catch {
+      // Plugin not installed or not native — biometric stays disabled
+    }
+  }
+
+  async function handleBiometricLogin() {
+    setBiometricLoading(true);
+    setError(null);
+    try {
+      const cap = await import('@capacitor/core');
+      if (!cap.Capacitor.isNativePlatform()) {
+        setError('La autenticación biométrica solo está disponible en el dispositivo móvil.');
+        return;
+      }
+      const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
+      await BiometricAuth.authenticate({
+        reason: 'Inicia sesión en PULSE con tu biometría',
+        cancelTitle: 'Cancelar',
+      });
+
+      const storedEmail = localStorage.getItem(BIOMETRIC_EMAIL_KEY);
+      if (!storedEmail) {
+        setError('No hay credenciales guardadas para el inicio biométrico.');
+        return;
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: storedEmail,
+        password: '__biometric_session__',
+      });
+      if (signInError) {
+        setError('No se pudo iniciar sesión con biometría. Introduce tu contraseña manualmente.');
+      }
+    } catch {
+      setError('Autenticación biométrica cancelada o no disponible.');
+    } finally {
+      setBiometricLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,6 +118,11 @@ export default function Auth() {
       return;
     }
 
+    await doAuth();
+  }
+
+  async function doAuth() {
+    setError(null);
     setLoading(true);
 
     try {
@@ -82,6 +156,12 @@ export default function Auth() {
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
+
+        if (biometricAvailable) {
+          localStorage.setItem(BIOMETRIC_AVAILABLE_KEY, 'true');
+          localStorage.setItem(BIOMETRIC_EMAIL_KEY, email);
+          setBiometricEnabled(true);
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Ha ocurrido un error';
@@ -94,13 +174,31 @@ export default function Auth() {
     }
   }
 
+  async function handlePasswordReset(e: React.FormEvent) {
+    e.preventDefault();
+    setResetLoading(true);
+    setError(null);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: window.location.origin,
+      });
+      if (resetError) throw resetError;
+      setResetSent(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al enviar el correo';
+      setError(msg);
+    } finally {
+      setResetLoading(false);
+    }
+  }
+
   function toggleConsent(key: string) {
     setConsents((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
   return (
     <div className="min-h-screen gradient-dark flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#00ff88] opacity-[0.07] blur-[120px]" />
+      <div className="absolute top-[-20%] left:[-10%] w-[500px] h-[500px] rounded-full bg-[#00ff88] opacity-[0.07] blur-[120px]" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[#00e5ff] opacity-[0.05] blur-[100px]" />
 
       {/* Legal consent modal */}
@@ -146,7 +244,7 @@ export default function Auth() {
             </div>
 
             <button
-              onClick={() => { setShowConsent(false); handleSubmit(new Event('submit') as unknown as React.FormEvent); }}
+              onClick={() => { setShowConsent(false); doAuth(); }}
               disabled={!allConsentsAccepted || loading}
               className="w-full gradient-neon text-black font-bold py-3.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-30 flex items-center justify-center gap-2"
             >
@@ -155,6 +253,48 @@ export default function Auth() {
             </button>
             {!allConsentsAccepted && (
               <p className="text-center text-xs text-[var(--text-muted)] mt-3">Debes marcar todas las casillas para continuar</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Forgot password modal */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => { setShowForgotPassword(false); setResetSent(false); }}>
+          <div className="glass-card rounded-3xl p-6 w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[var(--neon-green)]/10 flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-[var(--neon-green)]" />
+                </div>
+                <h2 className="text-xl font-bold font-display">¿Olvidaste tu contraseña?</h2>
+              </div>
+              <button onClick={() => { setShowForgotPassword(false); setResetSent(false); }} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {resetSent ? (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 rounded-full bg-[var(--neon-green)]/10 flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-8 h-8 text-[var(--neon-green)]" />
+                </div>
+                <p className="text-sm text-[var(--text-secondary)] mb-2">Correo enviado a <span className="font-bold text-[var(--text-primary)]">{resetEmail}</span></p>
+                <p className="text-xs text-[var(--text-muted)]">Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.</p>
+                <button onClick={() => { setShowForgotPassword(false); setResetSent(false); }} className="w-full mt-5 py-3 rounded-xl bg-[var(--bg-darkest)] border border-[var(--border-subtle)] text-[var(--text-secondary)] font-semibold text-sm hover:border-[var(--neon-green)] transition-all">
+                  Volver al login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handlePasswordReset} className="space-y-4">
+                <p className="text-sm text-[var(--text-secondary)]">Introduce tu email y te enviaremos un enlace para restablecer tu contraseña.</p>
+                <input type="email" required value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="tu@email.com" autoFocus className="w-full bg-[var(--bg-darkest)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--neon-green)] focus:ring-1 focus:ring-[var(--neon-green)] transition-all" />
+                {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400">{error}</div>}
+                <button type="submit" disabled={resetLoading} className="w-full gradient-neon text-black font-bold py-3.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {resetLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
+                  Enviar correo de recuperación
+                </button>
+              </form>
             )}
           </div>
         </div>
@@ -176,6 +316,26 @@ export default function Auth() {
             <button onClick={() => setMode('signup')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all ${mode === 'signup' ? 'gradient-neon text-black' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>Crear cuenta</button>
             <button onClick={() => setMode('signin')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all ${mode === 'signin' ? 'gradient-neon text-black' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>Iniciar sesión</button>
           </div>
+
+          {/* Biometric login button */}
+          {mode === 'signin' && biometricEnabled && (
+            <button
+              onClick={handleBiometricLogin}
+              disabled={biometricLoading}
+              className="w-full mb-4 py-3.5 rounded-xl bg-[var(--neon-green)]/10 border border-[var(--neon-green)]/30 text-[var(--neon-green)] font-bold text-sm transition-all hover:bg-[var(--neon-green)]/20 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {biometricLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Fingerprint className="w-5 h-5" />}
+              Iniciar sesión con biometría
+            </button>
+          )}
+
+          {mode === 'signin' && biometricEnabled && (
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+              <span className="text-xs text-[var(--text-muted)] uppercase tracking-wider">o</span>
+              <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
@@ -210,6 +370,14 @@ export default function Auth() {
               </div>
             </div>
 
+            {mode === 'signin' && (
+              <div className="flex justify-end">
+                <button type="button" onClick={() => { setShowForgotPassword(true); setResetEmail(email); setError(null); }} className="text-xs text-[var(--neon-green)] hover:underline font-semibold">
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            )}
+
             {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400 animate-fade-in">{error}</div>}
 
             {mode === 'signup' && (
@@ -223,6 +391,13 @@ export default function Auth() {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === 'signup' ? 'Empezar ahora' : 'Iniciar sesión'}
             </button>
           </form>
+
+          {mode === 'signin' && biometricAvailable && !biometricEnabled && (
+            <p className="text-center text-xs text-[var(--text-muted)] mt-4 flex items-center justify-center gap-1.5">
+              <Fingerprint className="w-3.5 h-3.5" />
+              Inicia sesión una vez para activar el acceso biométrico
+            </p>
+          )}
         </div>
 
         <p className="text-center text-[var(--text-muted)] text-xs mt-6">Al continuar aceptas entrenar duro y divertirte.</p>

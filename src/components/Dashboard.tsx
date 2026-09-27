@@ -72,7 +72,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: 'record' |
         planDays = enrichPlan(rawDays);
       }
     } else {
-      planDays = enrichPlan(generateWeeklyPlan(profile.goal, profile.sports, new Date()));
+      planDays = enrichPlan(generateWeeklyPlan(profile.goal, profile.sports, new Date(), undefined, profile.race_goal));
       await supabase.from('weekly_plans').insert({
         user_id: user.id,
         week_start: weekStart,
@@ -162,7 +162,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: 'record' |
     if (!user || !profile) return;
     setRegenerating(true);
     const weekStart = getMondayString(new Date());
-    const newPlan = generateWeeklyPlan(profile.goal, profile.sports, new Date());
+    const newPlan = generateWeeklyPlan(profile.goal, profile.sports, new Date(), undefined, profile.race_goal);
     const { data: existing } = await supabase.from('weekly_plans').select('id').eq('user_id', user.id).eq('week_start', weekStart).maybeSingle();
     if (existing) {
       await supabase.from('weekly_plans').update({ plan_data: newPlan }).eq('id', existing.id);
@@ -178,7 +178,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: 'record' |
   async function spinToday() {
     if (!user || !profile) return;
     const weekStart = getMondayString(new Date());
-    const freshPlan = generateWeeklyPlan(profile.goal, profile.sports, new Date(), plan);
+    const freshPlan = generateWeeklyPlan(profile.goal, profile.sports, new Date(), plan, profile.race_goal);
     const updated = [...freshPlan];
     setPlan(updated);
     setDetailDay(updated[todayIndex]);

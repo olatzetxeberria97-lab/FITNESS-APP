@@ -1,31 +1,57 @@
 workflows:
   ios-workflow:
-    name: Compilación de iOS
+    name: Compilación automática de iOS
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
+      groups:
+        - apple_credentials
       vars:
         BUNDLE_ID: "com.olatz.fitnessapp"
+      cocoapods: default
     scripts:
-      - name: Instalar dependencias y compilar web
+      - name: Instalar dependencias web
         script: |
-              npm install
-              npm run build || true
-      - name: Sincronizar Capacitor iOS
+          npm install
+      - name: Construir la aplicación web
         script: |
-              npx cap add ios || true
-              npx cap sync ios
-      - name: Configurar versión
+          npm run build
+      - name: Añadir plataforma iOS automáticamente
         script: |
-              VERSION=$(node -p "require('./package.json').version")
-              BUILD_NUMBER=$(date +%Y%m%d%H%M)
-              echo "Configuring Version: $VERSION"
-              cd ios/App
-              agvtool new-marketing-version "$VERSION"
-              agvtool new-version -all "$BUILD_NUMBER"
-      - name: Compilar aplicación iOS
+          npx cap add ios
+          npx cap sync ios
+      - name: Inyectar versión y número de compilación
         script: |
-              xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -derivedDataPath derived_data build
+          APP_VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUMBER=$(date +%Y%m%d)
+          echo "Versión: $APP_VERSION  Build: $BUILD_NUMBER"
+          PBX=ios/App/App.xcodeproj/project.pbxproj
+          if [ -f "$PBX" ]; then
+            sed -i "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = $APP_VERSION/g" "$PBX"
+            sed -i "s/CURRENT_PROJECT_VERSION = [^;]*/CURRENT_PROJECT_VERSION = $BUILD_NUMBER/g" "$PBX"
+          fi
+      - name: Inyectar permisos iOS en Info.plist
+        script: |
+          PLIST=ios/App/App/Info.plist
+          if [ -f "$PLIST" ]; then
+            /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'PULSE necesita acceso a la cámara para que puedas subir fotos de tus entrenamientos y avatar.'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'PULSE necesita acceso a tu galería para que puedas seleccionar fotos de tus entrenamientos y avatar.'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Utilizamos Face ID para un acceso rápido y seguro a tu cuenta.'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local.'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSLocationAlwaysAndWhenInUseUsageDescription string 'PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local.'" "$PLIST" 2>/dev/null || true
+          fi
+      - name: Configurar pantalla de inicio (Launch Screen)
+        script: |
+          PLIST=ios/App/App/Info.plist
+          if [ -f "$PLIST" ]; then
+            /usr/libexec/PlistBuddy -c "Add :UILaunchScreen dict" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :UILaunchScreen:UIColorName string 'LaunchScreenColor'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :UIViewControllerBasedStatusBarAppearance bool false" "$PLIST" 2>/dev/null || true
+          fi
+      - name: Instalar Pods y construir IPA
+        script: |
+          cd ios/App && pod install
+          cd $CM_BUILD_DIR/ios/App
+          xcode-project build-ipa --workspace App.xcworkspace --scheme App
     artifacts:
-      - ios/App/derived_data/Build/Products/Release-iphoneos/*.app
-      - build/ios/ipa/*.ipa
+      - ios/App/build/ios/ipa/*.ipa

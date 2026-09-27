@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Users, Swords, Trophy, Check, Loader2, Crown, Dumbbell, Plus, X, RefreshCw, Scale, Globe, Target, Watch, Sparkles, BellRing } from 'lucide-react';
+import { Bell, Users, Swords, Trophy, Check, Loader2, Crown, Dumbbell, Plus, X, RefreshCw, Scale, Globe, Target, Watch, Sparkles, BellRing, AlertTriangle, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -164,7 +164,7 @@ export default function Settings({ onNavigate }: { onNavigate: (tab: string) => 
     if (!user || !profile) return;
     setRegenerating(true);
     const weekStart = getMondayString(new Date());
-    const newPlan: PlanDay[] = generateWeeklyPlan(profile.goal, selectedSports, new Date());
+    const newPlan: PlanDay[] = generateWeeklyPlan(profile.goal, selectedSports, new Date(), undefined, profile.race_goal);
     const { data: existing } = await supabase.from('weekly_plans').select('id').eq('user_id', user.id).eq('week_start', weekStart).maybeSingle();
     if (existing) {
       await supabase.from('weekly_plans').update({ plan_data: newPlan }).eq('id', existing.id);
@@ -183,7 +183,7 @@ export default function Settings({ onNavigate }: { onNavigate: (tab: string) => 
     await refreshProfile();
     const weekStart = getMondayString(new Date());
     const sports = profile?.sports || [];
-    const newPlan: PlanDay[] = generateWeeklyPlan(tempGoal, sports, new Date());
+    const newPlan: PlanDay[] = generateWeeklyPlan(tempGoal, sports, new Date(), undefined, profile?.race_goal);
     const { data: existing } = await supabase.from('weekly_plans').select('id').eq('user_id', user.id).eq('week_start', weekStart).maybeSingle();
     if (existing) {
       await supabase.from('weekly_plans').update({ plan_data: newPlan }).eq('id', existing.id);
@@ -241,6 +241,35 @@ export default function Settings({ onNavigate }: { onNavigate: (tab: string) => 
     await refreshProfile();
     setHealthProvider(null);
     setHealthConnecting(false);
+  }
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
+
+  async function handleDeleteAccount() {
+    if (!user) return;
+    setDeletingAccount(true);
+    setDeleteAccountError(null);
+    try {
+      await supabase.from('workout_blocks').delete().eq('workout_id', supabase.from('workouts').select('id').eq('user_id', user.id));
+      await supabase.from('workouts').delete().eq('user_id', user.id);
+      await supabase.from('weight_logs').delete().eq('user_id', user.id);
+      await supabase.from('weekly_plans').delete().eq('user_id', user.id);
+      await supabase.from('achievements').delete().eq('user_id', user.id);
+      await supabase.from('legal_consents').delete().eq('user_id', user.id);
+      await supabase.from('daily_steps').delete().eq('user_id', user.id);
+      await supabase.from('profiles').delete().eq('id', user.id);
+      const { error: authError } = await supabase.auth.signOut();
+      if (authError) throw authError;
+      localStorage.removeItem('pulse_biometric_enabled');
+      localStorage.removeItem('pulse_biometric_email');
+      window.location.reload();
+    } catch (err) {
+      setDeleteAccountError(err instanceof Error ? err.message : 'Error al eliminar la cuenta');
+    } finally {
+      setDeletingAccount(false);
+    }
   }
 
   const toggles = [
@@ -591,7 +620,47 @@ export default function Settings({ onNavigate }: { onNavigate: (tab: string) => 
             <span className="text-sm font-semibold">{profile?.display_name}</span>
           </div>
         </div>
+
+        {/* Delete account — discreet but accessible */}
+        <div className="mt-5 pt-4 border-t border-[var(--border-subtle)]">
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-xs text-[var(--text-muted)] hover:text-red-400 transition-colors flex items-center gap-1.5"
+          >
+            <Trash2 className="w-3 h-3" />
+            Eliminar cuenta
+          </button>
+        </div>
       </div>
+
+      {/* Delete account confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="glass-card rounded-3xl p-6 w-full max-w-sm animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-400" />
+              </div>
+              <h3 className="text-lg font-bold font-display">Eliminar cuenta</h3>
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] mb-2">Esta acción es <span className="font-bold text-red-400">irreversible</span>. Se borrarán todos tus datos:</p>
+            <ul className="text-xs text-[var(--text-muted)] space-y-1 mb-5 ml-4">
+              <li>• Entrenamientos y rutas GPS</li>
+              <li>• Historial de peso</li>
+              <li>• Planes semanales</li>
+              <li>• Logros y consents</li>
+            </ul>
+            {deleteAccountError && <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400 mb-3">{deleteAccountError}</div>}
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 rounded-xl bg-[var(--bg-darkest)] border border-[var(--border-subtle)] text-[var(--text-secondary)] font-semibold text-sm hover:border-[var(--text-muted)] transition-all">Cancelar</button>
+              <button onClick={handleDeleteAccount} disabled={deletingAccount} className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
+                {deletingAccount ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

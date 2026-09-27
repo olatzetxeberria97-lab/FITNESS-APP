@@ -1,4 +1,4 @@
-export type Goal = 'lose_weight' | 'gain_muscle' | 'general_health' | 'define' | 'gain_strength';
+export type Goal = 'lose_weight' | 'gain_muscle' | 'general_health' | 'define' | 'gain_strength' | 'run_distances';
 
 export type SportKey =
   | 'running'
@@ -22,9 +22,10 @@ export const GOAL_DESCRIPTIONS: Record<Goal, string> = {
   general_health: 'Mantenerse activo y sentirse bien',
   define: 'Marcar músculo y reducir grasa corporal',
   gain_strength: 'Aumentar la fuerza y potencia muscular',
+  run_distances: 'Preparar carreras de 10K a Maratón',
 };
 
-export const GOAL_ORDER: Goal[] = ['gain_muscle', 'define', 'lose_weight', 'gain_strength', 'general_health'];
+export const GOAL_ORDER: Goal[] = ['gain_muscle', 'define', 'lose_weight', 'gain_strength', 'general_health', 'run_distances'];
 
 export const DEFAULT_SPORTS: Sport[] = [
   // Outdoor / Endurance (GPS)
@@ -114,7 +115,7 @@ export interface Profile {
   premium_product_id: string | null;
   is_premium: boolean;
   legal_accepted: boolean;
-  race_goal: '5k' | '10k' | '15k' | 'half_marathon' | null;
+  race_goal: '5k' | '10k' | '15k' | '20k' | 'half_marathon' | 'marathon' | null;
   notifications_enabled: boolean;
   notify_friends_activity: boolean;
   notify_challenges: boolean;
@@ -250,6 +251,7 @@ export const GOAL_LABELS: Record<Goal, string> = {
   general_health: 'Hacer deporte por salud',
   define: 'Definir',
   gain_strength: 'Ganar fuerza',
+  run_distances: 'Correr más distancias',
 };
 
 export const GOAL_EMOJIS: Record<Goal, string> = {
@@ -258,6 +260,7 @@ export const GOAL_EMOJIS: Record<Goal, string> = {
   general_health: '❤️',
   define: '🎯',
   gain_strength: '🏋️',
+  run_distances: '🏃',
 };
 
 export const SPORT_EMOJIS: Record<string, string> = {
@@ -400,10 +403,11 @@ export const ENDLESS_ACHIEVEMENTS: { category: string; categoryEmoji: string; ti
 ];
 
 export const RACE_GOALS = [
-  { key: '5k', label: '5K', desc: '3 semanas a carrera continua' },
-  { key: '10k', label: '10K', desc: '6 semanas con series' },
-  { key: '15k', label: '15K', desc: '8 semanas con tempo runs' },
-  { key: 'half_marathon', label: 'Media Maratón', desc: '12 semanas con tiradas largas' },
+  { key: '10k', label: '10K', desc: '10 km — 8 semanas con series' },
+  { key: '15k', label: '15K', desc: '15 km — 10 semanas con tempo runs' },
+  { key: '20k', label: '20K', desc: '20 km — 12 semanas con tiradas largas' },
+  { key: 'half_marathon', label: 'Media Maratón', desc: '21,097 km — 14 semanas con tiradas largas' },
+  { key: 'marathon', label: 'Maratón', desc: '42,195 km — 18 semanas con volumen alto' },
 ] as const;
 
 export const SUBSCRIPTION_INFO = {

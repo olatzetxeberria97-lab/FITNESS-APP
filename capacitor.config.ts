@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.fitness.community.app',
+  appId: 'com.olatz.fitnessapp',
   appName: 'PULSE',
   webDir: 'dist',
   server: {
@@ -10,18 +10,28 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'always',
     backgroundColor: '#0a0a0f',
+    scrollEnabled: true,
   },
   android: {
     backgroundColor: '#0a0a0f',
   },
   plugins: {
     Geolocation: {
-      // iOS permissions strings — these are read by the Info.plist generator
       iosPermissionStrings: {
         NSLocationWhenInUseUsageDescription:
           'PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local.',
         NSLocationAlwaysAndWhenInUseUsageDescription:
           'PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local.',
+      },
+    },
+    BiometricAuth: {
+      iosPermissionStrings: {
+        NSFaceIDUsageDescription: 'Utilizamos Face ID para un acceso rápido y seguro a tu cuenta.',
+      },
+      androidPermissionStrings: {
+        title: 'Autenticación biométrica',
+        message: 'PULSE necesita tu huella o reconocimiento facial para un acceso rápido y seguro.',
+        cancelButtonText: 'Cancelar',
       },
     },
   },

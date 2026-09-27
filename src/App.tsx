@@ -13,6 +13,7 @@ import Profile from '@/components/Profile';
 import Settings from '@/components/Settings';
 import Subscription from '@/components/Subscription';
 import { scheduleDailyReminders, getPermission, notificationsSupported } from '@/lib/notifications';
+import SplashScreen from '@/components/SplashScreen';
 
 function AppContent() {
   const { session, profile, loading, refreshProfile } = useAuth();
@@ -44,19 +45,11 @@ function AppContent() {
   }, [session, profile]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen gradient-dark flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-[var(--neon-green)] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   if (!session) return <Auth />;
-  if (!profile) return (
-    <div className="min-h-screen gradient-dark flex items-center justify-center">
-      <div className="w-10 h-10 border-2 border-[var(--neon-green)] border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (!profile) return <SplashScreen />;
   if (!profile.onboarding_complete) return <Onboarding />;
 
   return (

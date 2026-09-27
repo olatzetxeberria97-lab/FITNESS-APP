@@ -66,6 +66,13 @@ export function calculateNutrition(
     goalLabel = 'Superávit ligero';
     advice =
       'Come en un superávit ligero y prioriza proteína y carbohidratos para ganar fuerza. Descansa bien entre sesiones.';
+  } else if (goal === 'run_distances') {
+    targetCalories = tdee + 150;
+    proteinPerKg = 1.8;
+    fatPct = 0.25;
+    goalLabel = 'Carbohidratos para resistencia';
+    advice =
+      'Prioriza carbohidratos antes de entrenar (avena, arroz, plátano) para tener energía. Recupera con proteína y carbs en 30-60 min. Hidrátate con electrolitos en sesiones largas.';
   } else {
     targetCalories = tdee;
     proteinPerKg = 1.6;
@@ -133,6 +140,16 @@ const mealsByGoal: Record<Goal, MealSuggestion[]> = {
     { name: 'Hummus con verduras', emoji: '🥕', description: 'Hummus casero + zanahoria + pepino + apio', calories: 200 , mealTime: "afternoon" },
     { name: 'Yogur con fruta', emoji: '🫐', description: 'Yogur natural + frutos rojos + miel + nueces', calories: 280 , mealTime: "breakfast" },
     { name: 'Sopa de verduras', emoji: '🥣', description: 'Sopa de calabaza + lentejas + pan integral', calories: 350 , mealTime: "lunch" },
+  ],
+  run_distances: [
+    { name: 'Avena energética', emoji: '🥣', description: 'Avena (80 g) + plátano + miel + leche', calories: 550 , mealTime: "breakfast" },
+    { name: 'Pasta con pollo', emoji: '🍝', description: 'Pasta integral (100 g) + pollo + tomate + aceite', calories: 650 , mealTime: "lunch" },
+    { name: 'Snack pre-carrera', emoji: '🍌', description: 'Plátano + puñado de uvas pasas + agua', calories: 200 , mealTime: "mid-morning" },
+    { name: 'Cena de recuperación', emoji: '🍗', description: 'Pollo (180 g) + arroz (120 g) + brócoli + aceite', calories: 600 , mealTime: "dinner" },
+    { name: 'Batido post-entreno', emoji: '🥤', description: 'Proteína + plátano + avena + leche + miel', calories: 400 , mealTime: "mid-morning" },
+    { name: 'Tostada con aguacate', emoji: '🥑', description: 'Tostada integral + aguacate + huevo + tomate', calories: 400 , mealTime: "afternoon" },
+    { name: 'Arroz con salmón', emoji: '🍚', description: 'Arroz + salmón + verduras + aceite de oliva', calories: 550 , mealTime: "breakfast" },
+    { name: 'Patata con atún', emoji: '🐟', description: 'Patata asada + atún + huevo + aceitunas', calories: 450 , mealTime: "lunch" },
   ],
 };
 

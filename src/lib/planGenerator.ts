@@ -1,6 +1,7 @@
 import type { Goal, PlanDay, PlanBlock, BlockType } from './types';
 import { DEFAULT_SPORTS, SPORT_EMOJIS } from './types';
 import { applyDetailedWorkoutToDay, upgradePlan } from './workoutGenerator';
+import { generateRacePlan, isRaceGoal } from './racePlanGenerator';
 
 export type { PlanDay, PlanBlock };
 export { upgradePlan } from './workoutGenerator';
@@ -1767,13 +1768,17 @@ export function generateWeeklyPlan(
   sports: string[],
   weekStartDate: Date,
   existingPlan?: PlanDay[],
+  raceGoal?: string | null,
 ): PlanDay[] {
+  if (isRaceGoal(raceGoal)) {
+    return generateRacePlan(raceGoal, weekStartDate);
+  }
   const monday = getMondayOfWeek(weekStartDate);
   const userSports = sports.length > 0 ? sports : ['combined'];
 
   const trainingDaysCount =
-    goal === 'general_health' ? 4 : goal === 'lose_weight' ? 5 : goal === 'define' ? 5 : goal === 'gain_strength' ? 5 : 5;
-  const recoveryDaysCount = goal === 'gain_muscle' || goal === 'gain_strength' ? 1 : goal === 'define' ? 1 : 1;
+    goal === 'general_health' ? 4 : goal === 'lose_weight' ? 5 : goal === 'define' ? 5 : goal === 'gain_strength' ? 5 : goal === 'run_distances' ? 5 : 5;
+  const recoveryDaysCount = goal === 'gain_muscle' || goal === 'gain_strength' ? 1 : goal === 'define' ? 1 : goal === 'run_distances' ? 1 : 1;
   const restDaysCount = 7 - trainingDaysCount - recoveryDaysCount;
 
   const dayPlan: ('training' | 'recovery' | 'rest')[] = [];

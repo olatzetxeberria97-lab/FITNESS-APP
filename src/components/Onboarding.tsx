@@ -34,7 +34,7 @@ export default function Onboarding() {
   const hasRunning = selectedSports.includes('running') || selectedSports.includes('walking');
   const hasStrength = selectedSports.includes('strength');
   const hasTeamSport = selectedSports.includes('football') || selectedSports.includes('basketball');
-  const hasRacePrep = selectedSports.includes('running');
+  const hasRacePrep = selectedSports.includes('running') || goal === 'run_distances';
 
   const totalSteps = 5 + (hasRunning ? 1 : 0) + (hasStrength ? 1 : 0) + (hasRacePrep ? 1 : 0);
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Camera, Check, Loader2, User, Mail, Target, Calendar, Edit3, X, Save, Cake } from 'lucide-react';
+import { Camera, Check, Loader2, User, Mail, Target, Calendar, Edit3, X, Save, Cake, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -10,7 +10,7 @@ const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/jpg'];
 
 export default function Profile() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, signOut } = useAuth();
   const { t } = useI18n();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
@@ -269,6 +269,15 @@ export default function Profile() {
           })}
         </div>
       </div>
+
+      {/* Logout */}
+      <button
+        onClick={() => signOut()}
+        className="w-full py-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-sm transition-all hover:bg-red-500/20 hover:border-red-500/50 flex items-center justify-center gap-2"
+      >
+        <LogOut className="w-5 h-5" />
+        Cerrar sesión
+      </button>
     </div>
   );
 }

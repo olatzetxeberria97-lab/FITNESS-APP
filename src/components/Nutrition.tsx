@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Flame, Beef, Wheat, Droplet, Info, Apple, Moon, Activity, Zap } from 'lucide-react';
+import { Flame, Beef, Wheat, Droplet, Info, Apple, Moon, Activity, Zap, Smile, Meh, Frown, BatteryMedium, BatteryLow } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { calculateNutrition, getMealSuggestions, getSportNutritionTip } from '@/lib/nutrition';
@@ -293,6 +293,38 @@ export default function Nutrition() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Weekly meal plan */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Apple className="w-5 h-5 text-[var(--neon-green)]" />
+              <h3 className="text-lg font-bold font-display">Plan semanal</h3>
+              <span className="ml-auto text-xs text-[var(--text-muted)]">Menú adaptado a tu objetivo</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
+              {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((dayLabel, dayIdx) => {
+                const dow = dayIdx === 6 ? 0 : dayIdx + 1;
+                const dayMeals = getMealSuggestions(profile.goal, dow);
+                const isToday = new Date().getDay() === dow;
+                return (
+                  <div key={dayIdx} className={`glass-card rounded-2xl p-3 transition-all ${isToday ? 'border-[var(--neon-green)]/30 bg-[var(--neon-green)]/5' : ''}`}>
+                    <p className={`text-xs font-bold uppercase tracking-wider mb-2 ${isToday ? 'text-[var(--neon-green)]' : 'text-[var(--text-muted)]'}`}>{dayLabel}{isToday ? ' · Hoy' : ''}</p>
+                    <div className="space-y-1.5">
+                      {dayMeals.slice(0, 4).map((meal, mi) => (
+                        <div key={mi} className="flex items-start gap-1.5">
+                          <span className="text-base flex-shrink-0">{meal.emoji}</span>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold truncate">{meal.name}</p>
+                            <p className="text-[9px] text-[var(--text-muted)]">{meal.calories} kcal</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </>

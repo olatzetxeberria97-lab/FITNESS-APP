@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Scale, TrendingDown, TrendingUp, Plus, X, Flame, Beef, Wheat, Droplet, Apple, Check, Info, Shuffle, Trash2, AlertTriangle, ArrowRightLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Scale, TrendingDown, TrendingUp, Plus, X, Flame, Beef, Wheat, Droplet, Apple, Check, Info, Shuffle, Trash2, AlertTriangle, ArrowRightLeft, CalendarPlus } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
@@ -33,6 +33,11 @@ export default function CalendarView() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
   const [showAllWorkouts, setShowAllWorkouts] = useState(false);
+  const [showRetroModal, setShowRetroModal] = useState(false);
+  const [retroSport, setRetroSport] = useState('');
+  const [retroDuration, setRetroDuration] = useState('30');
+  const [retroDistance, setRetroDistance] = useState('');
+  const [retroSaving, setRetroSaving] = useState(false);
   const { t } = useI18n();
 
   const loadData = useCallback(async () => {
@@ -150,7 +155,7 @@ export default function CalendarView() {
     if (!user || !profile) return;
     setSpinningIdx(idx);
     const allSports = profile.sports.length > 0 ? profile.sports : ['combined'];
-    const newPlan = generateWeeklyPlan(profile.goal, allSports, new Date());
+    const newPlan = generateWeeklyPlan(profile.goal, allSports, new Date(), undefined, profile.race_goal);
     const updated = [...weekPlan];
     updated[idx] = { ...newPlan[idx], day: weekPlan[idx].day, date: weekPlan[idx].date, completed: weekPlan[idx].completed };
     setWeekPlan(updated);
@@ -178,6 +183,38 @@ export default function CalendarView() {
   }
 
   const selectedWorkouts = selectedDate ? workoutsByDate[selectedDate] || [] : [];
+
+  const isPastDate = selectedDate && selectedDate <= today;
+
+  async function saveRetroWorkout() {
+    if (!user || !selectedDate || !retroSport) return;
+    const dur = parseInt(retroDuration) || 0;
+    if (dur <= 0) return;
+    setRetroSaving(true);
+    try {
+      const distKm = retroDistance ? parseFloat(retroDistance) : null;
+      const calories = distKm ? Math.round(distKm * 60 + dur * 0.15) : Math.round(dur * 7);
+      const { error } = await supabase.from('workouts').insert({
+        user_id: user.id,
+        sport: retroSport,
+        type: 'manual',
+        date: selectedDate,
+        duration_sec: dur * 60,
+        distance_km: distKm,
+        calories_est: calories,
+      });
+      if (error) throw error;
+      setShowRetroModal(false);
+      setRetroSport('');
+      setRetroDuration('30');
+      setRetroDistance('');
+      loadData();
+    } catch {
+      // error is surfaced by remaining in modal
+    } finally {
+      setRetroSaving(false);
+    }
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -299,8 +336,20 @@ export default function CalendarView() {
       {/* Selected date workouts */}
       {selectedDate && (
         <div className="glass-card rounded-3xl p-6 animate-scale-in">
-          <h3 className="font-bold mb-3">{new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
-          {selectedWorkouts.length === 0 ? <p className="text-[var(--text-secondary)] text-sm">{t('cal.noWorkoutsDay')}</p> : (
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold">{new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
+            {isPastDate && (
+              <button onClick={() => setShowRetroModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--neon-green)]/10 border border-[var(--neon-green)]/30 text-[var(--neon-green)] font-semibold text-xs hover:bg-[var(--neon-green)]/20 transition-all">
+                <CalendarPlus className="w-3.5 h-3.5" /> Añadir entrenamiento
+              </button>
+            )}
+          </div>
+          {selectedWorkouts.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-[var(--text-secondary)] text-sm mb-1">{t('cal.noWorkoutsDay')}</p>
+              {isPastDate && <p className="text-xs text-[var(--text-muted)]">¿Se te olvidó registrar? Usa el botón de arriba para añadirlo.</p>}
+            </div>
+          ) : (
             <div className="space-y-2">
               {selectedWorkouts.map((w) => (
                 <div key={w.id} className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-darkest)] border border-[var(--border-subtle)]">
@@ -366,6 +415,59 @@ export default function CalendarView() {
                   <button onClick={() => setDeleteTarget(w)} className='w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all flex items-center justify-center flex-shrink-0' title={t('cal.delete')}><Trash2 className='w-4 h-4' /></button>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Retroactive workout modal */}
+      {showRetroModal && selectedDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowRetroModal(false)}>
+          <div className="glass-card rounded-3xl p-6 w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[var(--neon-green)]/10 flex items-center justify-center">
+                  <CalendarPlus className="w-5 h-5 text-[var(--neon-green)]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold font-display">Registrar entrenamiento</h3>
+                  <p className="text-xs text-[var(--text-muted)]">{new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                </div>
+              </div>
+              <button onClick={() => setShowRetroModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Deporte</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[{key:'running',emoji:'🏃',label:'Correr'},{key:'strength',emoji:'🏋️',label:'Pesas'},{key:'cycling',emoji:'🚴',label:'Ciclismo'},{key:'walking',emoji:'🚶',label:'Caminar'},{key:'swimming',emoji:'🏊',label:'Nadar'},{key:'yoga',emoji:'🧘',label:'Yoga'},{key:'football',emoji:'⚽',label:'Fútbol'},{key:'basketball',emoji:'🏀',label:'Basket'},{key:'padel',emoji:'🎾',label:'Pádel'}].map((s) => (
+                    <button key={s.key} onClick={() => setRetroSport(s.key)} className={`p-3 rounded-xl border-2 transition-all text-center ${retroSport === s.key ? 'border-[var(--neon-green)] bg-[var(--neon-green)]/10' : 'border-[var(--border-subtle)] bg-[var(--bg-darkest)] hover:border-[var(--text-muted)]'}`}>
+                      <span className="text-2xl block mb-1">{s.emoji}</span>
+                      <span className="text-[10px] font-semibold">{s.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Duración (minutos)</label>
+                <div className="flex gap-2 flex-wrap">
+                  {[15, 30, 45, 60, 90].map((min) => (
+                    <button key={min} onClick={() => setRetroDuration(String(min))} className={`px-4 py-2 rounded-xl border text-sm font-semibold transition-all ${retroDuration === String(min) ? 'border-[var(--neon-green)] bg-[var(--neon-green)]/10 text-[var(--neon-green)]' : 'border-[var(--border-subtle)] bg-[var(--bg-darkest)] text-[var(--text-secondary)]'}`}>{min} min</button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Distancia (km) — opcional</label>
+                <input type="number" step="0.01" value={retroDistance} onChange={(e) => setRetroDistance(e.target.value)} placeholder="ej. 5.2" className="w-full bg-[var(--bg-darkest)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--neon-green)] transition-all" />
+              </div>
+
+              <button onClick={saveRetroWorkout} disabled={!retroSport || retroSaving} className="w-full gradient-neon text-black font-bold py-3.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                {retroSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                Guardar entrenamiento
+              </button>
             </div>
           </div>
         </div>
