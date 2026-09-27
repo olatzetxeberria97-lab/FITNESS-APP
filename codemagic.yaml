@@ -13,8 +13,10 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Sincronizar plataforma iOS
+      - name: Añadir y sincronizar plataforma iOS
         script: |
+          rm -rf ios
+          npx cap add ios
           npx cap sync ios
       - name: Inyectar versión y número de compilación
         script: |
