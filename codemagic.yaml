@@ -15,9 +15,6 @@ workflows:
           npm run build
       - name: Añadir plataforma iOS y sincronizar
         script: |
-          if [ ! -d "ios" ]; then
-            npx cap add ios
-          fi
           npx cap sync ios
       - name: Inyectar versión y número de compilación
         script: |
@@ -33,5 +30,4 @@ workflows:
           fi
       - name: Compilar proyecto Xcode
         script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO build
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO build
