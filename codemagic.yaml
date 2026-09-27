@@ -4,14 +4,10 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
-      groups:
-        - credenciales de Apple
       vars:
         BUNDLE_ID: "com.olatz.fitnessapp"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-    integrations:
-      app_store_connect: Codemagic App Store Connect
     scripts:
       - name: Instalar dependencias web
         script: |
@@ -31,24 +27,14 @@ workflows:
         script: |
           PLIST=ios/App/App/Info.plist
           if [ -f "$PLIST" ]; then
-            /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'PULSE necesita acceso a la cámara para que puedas subir fotos de tus entrenamientos y avatar.'" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'PULSE necesita acceso a tu galería para que puedas seleccionar fotos de tus entrenamientos y avatar.'" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Utilizamos Face ID para un acceso rápido y seguro a tu cuenta.'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'PULSE necesita acceso a la cámara.'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'PULSE necesita acceso a tu galería.'" "$PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Utilizamos Face ID.'" "$PLIST" 2>/dev/null || true
           fi
-      - name: Configurar firma de código (Code Signing)
-        script: |
-          xcode-project use-profiles
-      - name: Compilar aplicación iOS para TestFlight
+      - name: Compilar aplicación iOS
         script: |
           xcodebuild-action build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - olatzetxeberria97@gmail.com
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
