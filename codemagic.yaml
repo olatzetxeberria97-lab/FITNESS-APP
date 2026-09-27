@@ -13,9 +13,10 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Preparar plataforma iOS
+      - name: Forzar creación de plataforma iOS
         script: |
-          npx cap add ios || true
+          npx cap init FitnessApp com.olatz.fitnessapp --web-dir dist --yes || true
+          npx cap add ios --force || true
           npx cap sync ios
       - name: Compilador proyecto Xcode
         script: |
