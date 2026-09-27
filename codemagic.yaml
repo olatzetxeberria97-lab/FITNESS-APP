@@ -6,6 +6,9 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
+      # Aquí enlazas el grupo de variables o la integración de Apple que conectamos antes
+      groups:
+        - appstore_credentials 
     scripts:
       - name: Instalar dependencias web
         script: |
@@ -16,3 +19,7 @@ workflows:
       - name: Sincronizar plataforma iOS
         script: |
           npx cap sync ios
+    publishing:
+      app_store_connect:
+        auth: integration # Utiliza la integración automática del Developer Portal que ya tienes conectada
+        submit_to_testflight: true # Sube la app automáticamente a TestFlight
