@@ -13,23 +13,9 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Añadir y sincronizar plataforma iOS
+      - name: Sincronizar plataforma iOS
         script: |
-          rm -rf ios
-          npx cap add ios
           npx cap sync ios
-      - name: Inyectar versión y número de compilación
-        script: |
-          find ios/App -name "project.pbxproj" -type f -exec sed -i '' 's/MARKETING_VERSION = .*/MARKETING_VERSION = 1.0.0;/g' {} +
-          find ios/App -name "project.pbxproj" -type f -exec sed -i '' 's/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = 20260927;/g' {} +
-      - name: Inyectar permisos iOS en Info.plist
-        script: |
-          PLIST=ios/App/App/Info.plist
-          if [ -f "$PLIST" ]; then
-            /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'PULSE necesita acceso a la cámara.'" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'PULSE necesita acceso a tu galería.'" "$PLIST" 2>/dev/null || true
-            /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Utilizamos Face ID.'" "$PLIST" 2>/dev/null || true
-          fi
       - name: Compilador proyecto Xcode
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGN_ALLOWED=NO build
