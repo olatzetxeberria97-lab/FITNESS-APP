@@ -1,11 +1,11 @@
 workflows:
-  ios-workflow:
+  ios-automatic-workflow:
     name: Compilación automática de iOS
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       vars:
-        BUNDLE_ID: "com.olatz.fitnessapp"
+        PACKAGE_ID: "com.olatz.fitnessapp"
     scripts:
       - name: Instalar dependencias web
         script: |
@@ -13,8 +13,9 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Añadir plataforma iOS y sincronizar
+      - name: Inicializar plataforma iOS
         script: |
+          npx cap add ios
           npx cap sync ios
       - name: Inyectar versión y número de compilación
         script: |
@@ -28,6 +29,6 @@ workflows:
             /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'PULSE necesita acceso a tu galería.'" "$PLIST" 2>/dev/null || true
             /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Utilizamos Face ID.'" "$PLIST" 2>/dev/null || true
           fi
-      - name: Compilar proyecto Xcode
+      - name: Compilador proyecto Xcode
         script: |
-          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO build
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGN_ALLOWED=NO build
