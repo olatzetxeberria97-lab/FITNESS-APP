@@ -6,8 +6,8 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
-        APP_STORE_CONNECT_ISSUER_ID: "94a5c1a0-472e-4f2e-9263-4ca98da54e9d"
-        APP_STORE_CONNECT_KEY_IDENTIFIER: "9NLX79YHJ5"
+    integrations:
+      app_store_connect: AppStoreConnect
     scripts:
       - name: Instalar dependencias web
         script: |
@@ -20,7 +20,7 @@ workflows:
           npx cap sync ios
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration
+        key_id: "9NLX79YHJ5"
+        issuer_id: "94a5c1a0-472e-4f2e-9263-4ca98da54e9d"
         submit_to_testflight: true
