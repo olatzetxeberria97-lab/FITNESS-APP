@@ -6,15 +6,6 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
-        APP_STORE_CONNECT_ISSUER_ID: "94a5c1a0-472e-4f2e-9263-4ca98da54e9d"
-        APP_STORE_CONNECT_KEY_IDENTIFIER: "3U2J699AXT"
-        APP_STORE_CONNECT_PRIVATE_KEY: |
-          -----BEGIN PRIVATE KEY-----
-          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgvZz+//Z7qRS+z3nw
-          bL7F7ShHzYwEKsfQhKtBGmXNbV6gCgYIKoZIzj0DAQehRANCAAQxIZMrhiKnKftT
-          kHqvl66EaoJ2IkK1Y6TWQKu7QTlaoULQ9DAiatN6n6PseG+V+YVJM7ueWfiX5c7b
-          0x++znPX
-          -----END PRIVATE KEY-----
     scripts:
       - name: Instalar dependencias web
         script: |
@@ -27,7 +18,13 @@ workflows:
           npx cap sync ios
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        api_key: |
+          -----BEGIN PRIVATE KEY-----
+          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgvZz+//Z7qRS+z3nw
+          bL7F7ShHzYwEKsfQhKtBGmXNbV6gCgYIKoZIzj0DAQehRANCAAQxIZMrhiKnKftT
+          kHqvl66EaoJ2IkK1Y6TWQKu7QTlaoULQ9DAiatN6n6PseG+V+YVJM7ueWfiX5c7b
+          0x++znPX
+          -----END PRIVATE KEY-----
+        key_id: "3U2J699AXT"
+        issuer_id: "94a5c1a0-472e-4f2e-9263-4ca98da54e9d"
         submit_to_testflight: true
