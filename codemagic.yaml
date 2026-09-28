@@ -13,10 +13,10 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Inicializar Capacitor iOS
+      - name: Sincronizar plataforma iOS y compilar
         script: |
-          npx cap add ios || true
           npx cap sync ios
+          cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -configuration Release archive -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
     publishing:
       app_store_connect:
         api_key: |
