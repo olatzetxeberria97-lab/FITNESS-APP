@@ -16,10 +16,6 @@ workflows:
       - name: Sincronizar plataforma iOS
         script: |
           npx cap sync ios
-      - name: Compilar proyecto iOS (Xcode)
-        script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release archive -archivePath build/App.xcarchive
     publishing:
       app_store_connect:
         api_key: |
@@ -32,3 +28,6 @@ workflows:
         key_id: "3U2J699AXT"
         issuer_id: "94a5c1a0-472e-4f2e-9263-4ca98da54e9d"
         submit_to_testflight: true
+        # Esto le indica a Codemagic que gestione la firma de forma automática para Capacitor
+        code_signing:
+          mode: automatic
