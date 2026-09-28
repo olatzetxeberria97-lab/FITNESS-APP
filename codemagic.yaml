@@ -16,6 +16,10 @@ workflows:
       - name: Sincronizar plataforma iOS
         script: |
           npx cap sync ios
+      - name: Compilar proyecto iOS (Xcode)
+        script: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release archive -archivePath build/App.xcarchive
     publishing:
       app_store_connect:
         api_key: |
