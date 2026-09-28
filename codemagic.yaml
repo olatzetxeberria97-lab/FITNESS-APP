@@ -16,10 +16,9 @@ workflows:
       - name: Sincronizar plataforma iOS
         script: |
           npx cap sync ios
-      - name: Construir app para iOS
+      - name: Construir archivo IPA para TestFlight
         script: |
-          # Codemagic detecta el proyecto en la carpeta ios automáticamente si se le indica el directorio de trabajo
-          cd ios && xcodebuild -workspace App/App.xcworkspace -scheme App -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
+          cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -configuration Release archive -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
     publishing:
       app_store_connect:
         api_key: |
