@@ -13,12 +13,10 @@ workflows:
       - name: Construir la aplicación web
         script: |
           npm run build
-      - name: Sincronizar plataforma iOS
+      - name: Sincronizar plataforma iOS y compilar
         script: |
-          npx cap sync ios
-      - name: Construir archivo IPA para TestFlight
-        script: |
-          cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -configuration Release archive -archivePath $HOME/Library/Developer/Xcode/Archives/App.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          npx cap update ios
+          npx cap copy ios
     publishing:
       app_store_connect:
         api_key: |
