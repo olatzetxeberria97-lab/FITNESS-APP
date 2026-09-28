@@ -6,14 +6,15 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.olatz.fitnessapp
     scripts:
-      - name: Instalar dependencias web
+      - name: Instalar dependencias y construir web
         script: |
           npm install
-      - name: Construir la aplicación web
-        script: |
           npm run build
-      - name: Sincronizar plataforma iOS
+      - name: Sincronizar Capacitor iOS
         script: |
           npx cap sync ios
     publishing:
