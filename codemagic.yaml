@@ -26,18 +26,34 @@ workflows:
 
       - name: Comprobar proyecto iOS
         script: |
-          echo "=== CONTENIDO DE IOS ==="
-          find ios -maxdepth 3 -type f \( -name "*.xcworkspace" -o -name "*.xcodeproj" \) -print
-          echo "=== FIN DE LA COMPROBACIÓN ==="
+          echo "======================================"
+          echo "      COMPROBANDO PROYECTO IOS"
+          echo "======================================"
+
+          echo ""
+          echo "Contenido de la carpeta ios:"
+          ls -la ios || true
+
+          echo ""
+          echo "Buscando proyectos Xcode:"
+          find ios -type f \( -name "*.xcworkspace" -o -name "*.xcodeproj" \) -print
+
+          echo ""
+          echo "Workspaces encontrados:"
+          find ios -type d -name "*.xcworkspace" -print
+
+          echo ""
+          echo "Proyectos encontrados:"
+          find ios -type d -name "*.xcodeproj" -print
+
+          echo ""
+          echo "======================================"
+          echo "      FIN DE LA COMPROBACION"
+          echo "======================================"
 
       - name: Configurar firma de iOS
         script: |
           xcode-project use-profiles
-
-      - name: Construir IPA
-        script: |
-          echo "La ruta del proyecto se configurará después de comprobar el resultado."
-          xcode-project build-ipa
 
     publishing:
       app_store_connect:
