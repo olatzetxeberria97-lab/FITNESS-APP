@@ -29,11 +29,29 @@ workflows:
         script: |
           xcode-project use-profiles
 
-      - name: Construir IPA
+      - name: Crear Archive
         script: |
-          xcode-project build-ipa \
-            --project ios/App/App.xcodeproj \
-            --target App
+          mkdir -p build/ios/xcarchive
+
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -target App \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            archive \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            DEVELOPMENT_TEAM=D2R496B234 \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE=Manual
+
+      - name: Crear IPA
+        script: |
+          mkdir -p build/ios/ipa
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
+            -exportOptionsPlist ios/App/exportOptions.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
