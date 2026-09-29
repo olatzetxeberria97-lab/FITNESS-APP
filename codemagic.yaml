@@ -6,8 +6,6 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
-      integrations:
-        app_store_connect: apple_api_key
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.olatz.fitnessapp
