@@ -6,8 +6,6 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "PULSE - fitness-community-we-6snd.bolt.host"
-      integrations:
-        app_store_connect: apple_api_key
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "PULSE - fitness-community-we-6snd.bolt.host"
@@ -21,5 +19,7 @@ workflows:
           npx cap sync ios
     publishing:
       app_store_connect:
-        auth: integration
+        # Al tener la clave ya vinculada en el panel web de Codemagic (Developer Portal),
+        # omitimos el bloque 'auth: integration' que causa conflictos de esquema y dejamos
+        # que Codemagic enlace la app por defecto con el Bundle ID.
         submit_to_testflight: true
