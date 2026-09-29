@@ -24,36 +24,13 @@ workflows:
         script: |
           npx cap sync ios
 
-      - name: Comprobar proyecto iOS
-        script: |
-          echo "======================================"
-          echo "      COMPROBANDO PROYECTO IOS"
-          echo "======================================"
-
-          echo ""
-          echo "Contenido de la carpeta ios:"
-          ls -la ios || true
-
-          echo ""
-          echo "Buscando proyectos Xcode:"
-          find ios -type f \( -name "*.xcworkspace" -o -name "*.xcodeproj" \) -print
-
-          echo ""
-          echo "Workspaces encontrados:"
-          find ios -type d -name "*.xcworkspace" -print
-
-          echo ""
-          echo "Proyectos encontrados:"
-          find ios -type d -name "*.xcodeproj" -print
-
-          echo ""
-          echo "======================================"
-          echo "      FIN DE LA COMPROBACION"
-          echo "======================================"
-
       - name: Configurar firma de iOS
         script: |
           xcode-project use-profiles
+
+      - name: Construir IPA
+        script: |
+          xcode-project build-ipa --project ios/App/App.xcodeproj
 
     publishing:
       app_store_connect:
