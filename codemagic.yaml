@@ -7,7 +7,6 @@ instance_type: mac_mini_m2
 environment:
   vars:
     PACKAGE_ID: "com.olatz.fitnessapp"
-
   ios_signing:
     distribution_type: app_store
     bundle_identifier: "com.olatz.fitnessapp"
