@@ -24,12 +24,19 @@ workflows:
         script: |
           npx cap sync ios
 
+      - name: Comprobar proyecto iOS
+        script: |
+          echo "=== CONTENIDO DE IOS ==="
+          find ios -maxdepth 3 -type f \( -name "*.xcworkspace" -o -name "*.xcodeproj" \) -print
+          echo "=== FIN DE LA COMPROBACIÓN ==="
+
       - name: Configurar firma de iOS
         script: |
           xcode-project use-profiles
 
       - name: Construir IPA
         script: |
+          echo "La ruta del proyecto se configurará después de comprobar el resultado."
           xcode-project build-ipa
 
     publishing:
