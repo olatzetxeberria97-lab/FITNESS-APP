@@ -28,15 +28,29 @@ workflows:
         script: |
           xcode-project use-profiles
 
-      - name: Construir IPA
+      - name: Diagnosticar Archive
         script: |
-          xcode-project build-ipa \
-            --project ios/App/App.xcodeproj \
-            --target App
+          set -o pipefail
+
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -target App \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            archive \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            DEVELOPMENT_TEAM=D2R496B234 \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE=Manual \
+            2>&1 | tee /tmp/archive.log
+
+          echo ""
+          echo "================ ERROR FINAL ================"
+          grep -iE "error:|warning:|provision|signing|profile|codesign|failed" /tmp/archive.log || true
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
+      - /tmp/xcode_logs/*.log
+      - /tmp/archive.log
 
     publishing:
       app_store_connect:
