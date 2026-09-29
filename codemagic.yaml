@@ -1,8 +1,8 @@
 workflows:
-ios-workflow:
-name: Compilación automática de iOS
-max_build_duration: 60
-instance_type: mac_mini_m2
+  ios-workflow:
+    name: Compilación automática de iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m2
 
 integrations:
   app_store_connect: PULSE-API
@@ -36,3 +36,4 @@ publishing:
   app_store_connect:
     auth: integration
     submit_to_testflight: true
+
