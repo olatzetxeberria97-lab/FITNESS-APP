@@ -29,6 +29,11 @@ workflows:
         script: |
           xcode-project use-profiles
 
+      - name: Comprobar exportOptions
+        script: |
+          echo "Buscando exportOptions.plist..."
+          find . -name "exportOptions.plist" -print
+
       - name: Crear Archive
         script: |
           mkdir -p build/ios/xcarchive
@@ -51,7 +56,7 @@ workflows:
             -exportArchive \
             -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
             -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
-            -exportOptionsPlist ios/App/exportOptions.plist
+            -exportOptionsPlist "$CM_BUILD_DIR/ios/App/exportOptions.plist"
 
     artifacts:
       - build/ios/ipa/*.ipa
