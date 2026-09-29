@@ -6,6 +6,8 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "PULSE - fitness-community-we-6snd.bolt.host"
+      integrations:
+        app_store_connect: apple_api_key
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "PULSE - fitness-community-we-6snd.bolt.host"
