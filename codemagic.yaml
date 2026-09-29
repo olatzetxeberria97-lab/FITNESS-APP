@@ -20,5 +20,5 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        key_name: PULSE-API
+        # Especificamos la clave de la integración mediante su nombre exacto en el bloque de publicación
         submit_to_testflight: true
