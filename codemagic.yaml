@@ -31,7 +31,8 @@ workflows:
       - name: Construir IPA
         script: |
           xcode-project build-ipa \
-            --project ios/App/App.xcodeproj
+            --project ios/App/App.xcodeproj \
+            --target App
 
     artifacts:
       - build/ios/ipa/*.ipa
