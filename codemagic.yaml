@@ -30,7 +30,13 @@ workflows:
 
       - name: Construir IPA
         script: |
-          xcode-project build-ipa --project ios/App/App.xcodeproj
+          xcode-project build-ipa \
+            --project ios/App/App.xcodeproj \
+            --scheme App
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
