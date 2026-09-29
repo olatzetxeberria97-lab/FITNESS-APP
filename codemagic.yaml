@@ -5,10 +5,10 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       vars:
-        PACKAGE_ID: "com.olatz.fitnessapp"
+        PACKAGE_ID: "PULSE - fitness-community-we-6snd.bolt.host"
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.olatz.fitnessapp
+        bundle_identifier: "PULSE - fitness-community-we-6snd.bolt.host"
     scripts:
       - name: Instalar dependencias y construir web
         script: |
