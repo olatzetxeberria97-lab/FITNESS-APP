@@ -1,24 +1,38 @@
 workflows:
-  ios-workflow:
-    name: Compilación automática de iOS
-    max_build_duration: 60
-    instance_type: mac_mini_m2
-    environment:
-      vars:
-        PACKAGE_ID: "com.olatz.fitnessapp"
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: "com.olatz.fitnessapp"
-    scripts:
-      - name: Instalar dependencias y construir web
-        script: |
-          npm install
-          npm run build
-      - name: Sincronizar Capacitor iOS
-        script: |
-          npx cap sync ios
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
+ios-workflow:
+name: Compilación automática de iOS
+max_build_duration: 60
+instance_type: mac_mini_m2
 
+integrations:
+  app_store_connect: PULSE-API
+
+environment:
+  vars:
+    PACKAGE_ID: "com.olatz.fitnessapp"
+  ios_signing:
+    distribution_type: app_store
+    bundle_identifier: "com.olatz.fitnessapp"
+
+scripts:
+  - name: Instalar dependencias y construir web
+    script: |
+      npm install
+      npm run build
+
+  - name: Sincronizar Capacitor iOS
+    script: |
+      npx cap sync ios
+
+  - name: Configurar firma de iOS
+    script: |
+      xcode-project use-profiles
+
+  - name: Construir IPA
+    script: |
+      xcode-project build-ipa
+
+publishing:
+  app_store_connect:
+    auth: integration
+    submit_to_testflight: true
