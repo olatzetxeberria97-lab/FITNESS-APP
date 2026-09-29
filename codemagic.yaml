@@ -19,7 +19,6 @@ workflows:
           npx cap sync ios
     publishing:
       app_store_connect:
-        # Al tener la clave ya vinculada en el panel web de Codemagic (Developer Portal),
-        # omitimos el bloque 'auth: integration' que causa conflictos de esquema y dejamos
-        # que Codemagic enlace la app por defecto con el Bundle ID.
+        auth: integration
+        key_name: PULSE-API
         submit_to_testflight: true
