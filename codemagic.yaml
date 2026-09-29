@@ -7,8 +7,8 @@ workflows:
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.olatz.fitnessapp
+        provisioning_profiles:
+          - "Tienda de aplicaciones de fitness"
     scripts:
       - name: Instalar dependencias y construir web
         script: |
