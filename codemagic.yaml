@@ -10,6 +10,7 @@ workflows:
     environment:
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
+
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.olatz.fitnessapp"
@@ -28,29 +29,15 @@ workflows:
         script: |
           xcode-project use-profiles
 
-      - name: Diagnosticar Archive
+      - name: Construir IPA
         script: |
-          set -o pipefail
-
-          xcodebuild \
-            -project ios/App/App.xcodeproj \
-            -target App \
-            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
-            archive \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            DEVELOPMENT_TEAM=D2R496B234 \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            CODE_SIGN_STYLE=Manual \
-            2>&1 | tee /tmp/archive.log
-
-          echo ""
-          echo "================ ERROR FINAL ================"
-          grep -iE "error:|warning:|provision|signing|profile|codesign|failed" /tmp/archive.log || true
+          xcode-project build-ipa \
+            --project ios/App/App.xcodeproj \
+            --target App
 
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcode_logs/*.log
-      - /tmp/archive.log
 
     publishing:
       app_store_connect:
