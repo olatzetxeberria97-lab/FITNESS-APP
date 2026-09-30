@@ -1,4 +1,4 @@
- workflows:
+workflows:
   ios-workflow:
     name: Compilación automática de iOS
     max_build_duration: 60
@@ -49,7 +49,7 @@
 
           echo "=== VERIFICACIÓN ==="
           xcrun agvtool what-marketing-version
-          xcrun agvtool what-version -all
+          xcrun agvtool what-version
 
       - name: Verificar versión antes de IPA
         script: |
