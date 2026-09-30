@@ -1,3 +1,30 @@
+    workflows:
+  ios-workflow:
+    name: Compilación automática de iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: PULSE-API
+
+    environment:
+      vars:
+        PACKAGE_ID: "com.olatz.fitnessapp"
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.olatz.fitnessapp"
+
+    scripts:
+      - name: Instalar dependencias y construir web
+        script: |
+          npm install
+          npm run build
+
+      - name: Sincronizar Capacitor iOS
+        script: |
+          npx cap sync ios
+
       - name: Configurar firma de iOS
         script: |
           xcode-project use-profiles
@@ -55,6 +82,8 @@
             exit 1
           fi
 
+          echo "IPA: $IPA_PATH"
+
           rm -rf /tmp/pulse_ipa_check
           mkdir -p /tmp/pulse_ipa_check
 
@@ -70,8 +99,10 @@
             -c "Print :CFBundleVersion" \
             "$APP_PLIST")
 
+          echo "======================================"
           echo "CFBundleShortVersionString = $VERSION"
           echo "CFBundleVersion = $BUILD"
+          echo "======================================"
 
           if [ "$VERSION" != "1.0" ]; then
             echo "ERROR: La versión debe ser 1.0"
@@ -84,3 +115,12 @@
           fi
 
           echo "OK: IPA contiene versión 1.0 (2)"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcode_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
