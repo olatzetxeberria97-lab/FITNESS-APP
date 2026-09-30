@@ -1,33 +1,40 @@
-workflows:
-  ios-workflow:
-    name: Compilación automática de iOS
-    max_build_duration: 60
-    instance_type: mac_mini_m2
-
-    integrations:
-      app_store_connect: PULSE-API
-
-    environment:
-      vars:
-        PACKAGE_ID: "com.olatz.fitnessapp"
-
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: "com.olatz.fitnessapp"
-
-    scripts:
-      - name: Instalar dependencias y construir web
-        script: |
-          npm install
-          npm run build
-
-      - name: Sincronizar Capacitor iOS
-        script: |
-          npx cap sync ios
-
       - name: Configurar firma de iOS
         script: |
           xcode-project use-profiles
+
+      - name: Establecer versión iOS
+        script: |
+          set -e
+
+          APP_VERSION="1.0"
+          BUILD_NUMBER="2"
+
+          echo "======================================"
+          echo "Configurando versión iOS"
+          echo "APP_VERSION=$APP_VERSION"
+          echo "BUILD_NUMBER=$BUILD_NUMBER"
+          echo "======================================"
+
+          cd "$CM_BUILD_DIR/ios/App"
+
+          xcrun agvtool new-marketing-version "$APP_VERSION"
+          xcrun agvtool new-version -all "$BUILD_NUMBER"
+
+          echo "=== VERIFICACIÓN ==="
+          xcrun agvtool what-marketing-version
+          xcrun agvtool what-version -all
+
+      - name: Verificar versión antes de IPA
+        script: |
+          set -e
+
+          echo "=== BUILD SETTINGS ==="
+
+          xcodebuild \
+            -project "$CM_BUILD_DIR/ios/App/App.xcodeproj" \
+            -scheme App \
+            -showBuildSettings \
+            | grep -E 'MARKETING_VERSION|CURRENT_PROJECT_VERSION'
 
       - name: Crear IPA
         script: |
@@ -35,11 +42,45 @@ workflows:
             --project ios/App/App.xcodeproj \
             --scheme App
 
-    artifacts:
-      - build/ios/ipa/*.ipa
-      - /tmp/xcode_logs/*.log
+      - name: Verificar IPA generado
+        script: |
+          set -e
 
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
+          echo "=== VERIFICANDO IPA REAL ==="
+
+          IPA_PATH=$(find "$CM_BUILD_DIR/build/ios/ipa" -name "*.ipa" | head -1)
+
+          if [ -z "$IPA_PATH" ]; then
+            echo "ERROR: No se encontró el IPA"
+            exit 1
+          fi
+
+          rm -rf /tmp/pulse_ipa_check
+          mkdir -p /tmp/pulse_ipa_check
+
+          unzip -q "$IPA_PATH" -d /tmp/pulse_ipa_check
+
+          APP_PLIST=$(find /tmp/pulse_ipa_check/Payload -name Info.plist | head -1)
+
+          VERSION=$(/usr/libexec/PlistBuddy \
+            -c "Print :CFBundleShortVersionString" \
+            "$APP_PLIST")
+
+          BUILD=$(/usr/libexec/PlistBuddy \
+            -c "Print :CFBundleVersion" \
+            "$APP_PLIST")
+
+          echo "CFBundleShortVersionString = $VERSION"
+          echo "CFBundleVersion = $BUILD"
+
+          if [ "$VERSION" != "1.0" ]; then
+            echo "ERROR: La versión debe ser 1.0"
+            exit 1
+          fi
+
+          if [ "$BUILD" != "2" ]; then
+            echo "ERROR: El build debe ser 2"
+            exit 1
+          fi
+
+          echo "OK: IPA contiene versión 1.0 (2)"
