@@ -75,7 +75,7 @@ workflows:
 
           echo "=== VERIFICANDO IPA REAL ==="
 
-          IPA_PATH=$(find "$CM_BUILD_DIR/build/ios/ipa" -name "*.ipa" | head -1)
+          IPA_PATH=$(find "$CM_BUILD_DIR/build/ios/ipa" -name "*.ipa" -print -quit)
 
           if [ -z "$IPA_PATH" ]; then
             echo "ERROR: No se encontró el IPA"
@@ -89,7 +89,38 @@ workflows:
 
           unzip -q "$IPA_PATH" -d /tmp/pulse_ipa_check
 
-          APP_PLIST=$(find /tmp/pulse_ipa_check/Payload -name Info.plist | head -1)
+          echo "=== BUSCANDO APP DENTRO DEL IPA ==="
+
+          APP_PATH=$(find /tmp/pulse_ipa_check/Payload -maxdepth 1 -type d -name "*.app" -print -quit)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No se encontró ninguna aplicación .app dentro del IPA"
+            echo "Contenido del Payload:"
+            ls -la /tmp/pulse_ipa_check/Payload
+            exit 1
+          fi
+
+          echo "APP: $APP_PATH"
+
+          APP_PLIST="$APP_PATH/Info.plist"
+
+          if [ ! -f "$APP_PLIST" ]; then
+            echo "ERROR: No se encontró Info.plist en:"
+            echo "$APP_PATH"
+            exit 1
+          fi
+
+          echo "INFO.PLIST: $APP_PLIST"
+
+          echo "=== COMPROBANDO VERSIONES ==="
+
+          /usr/libexec/PlistBuddy \
+            -c "Print :CFBundleShortVersionString" \
+            "$APP_PLIST"
+
+          /usr/libexec/PlistBuddy \
+            -c "Print :CFBundleVersion" \
+            "$APP_PLIST"
 
           VERSION=$(/usr/libexec/PlistBuddy \
             -c "Print :CFBundleShortVersionString" \
