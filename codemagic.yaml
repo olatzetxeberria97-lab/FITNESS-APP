@@ -8,6 +8,10 @@ workflows:
       app_store_connect: PULSE-API
 
     environment:
+      groups:
+        - apple_credentials
+        - supabase_credentials
+
       vars:
         PACKAGE_ID: "com.olatz.fitnessapp"
 
@@ -18,15 +22,34 @@ workflows:
     scripts:
       - name: Instalar dependencias y construir web
         script: |
+          set -e
           npm install
           npm run build
 
+      - name: Verificar variables de Supabase
+        script: |
+          set -e
+
+          if [ -z "${VITE_SUPABASE_URL:-}" ]; then
+            echo "ERROR: Falta VITE_SUPABASE_URL en el grupo de variables."
+            exit 1
+          fi
+
+          if [ -z "${VITE_SUPABASE_ANON_KEY:-}" ]; then
+            echo "ERROR: Falta VITE_SUPABASE_ANON_KEY en el grupo de variables."
+            exit 1
+          fi
+
+          echo "OK: Las variables de Supabase están configuradas."
+
       - name: Sincronizar Capacitor iOS
         script: |
+          set -e
           npx cap sync ios
 
       - name: Configurar firma de iOS
         script: |
+          set -e
           xcode-project use-profiles
 
       - name: Establecer versión iOS
@@ -34,7 +57,7 @@ workflows:
           set -e
 
           APP_VERSION="1.0"
-          BUILD_NUMBER="2"
+          BUILD_NUMBER="3"
 
           echo "======================================"
           echo "Configurando versión iOS"
@@ -47,15 +70,17 @@ workflows:
           xcrun agvtool new-marketing-version "$APP_VERSION"
           xcrun agvtool new-version -all "$BUILD_NUMBER"
 
-          echo "=== VERIFICACIÓN ==="
+          echo "=== VERIFICACIÓN DE VERSIÓN ==="
           xcrun agvtool what-marketing-version
           xcrun agvtool what-version
 
-      - name: Verificar versión antes de IPA
+      - name: Verificar configuración de compilación
         script: |
           set -e
 
           echo "=== BUILD SETTINGS ==="
+
+          cd "$CM_BUILD_DIR"
 
           xcodebuild \
             -project "$CM_BUILD_DIR/ios/App/App.xcodeproj" \
@@ -65,6 +90,8 @@ workflows:
 
       - name: Crear IPA
         script: |
+          set -e
+
           xcode-project build-ipa \
             --project ios/App/App.xcodeproj \
             --scheme App
@@ -78,7 +105,7 @@ workflows:
           IPA_PATH=$(find "$CM_BUILD_DIR/build/ios/ipa" -name "*.ipa" -print -quit)
 
           if [ -z "$IPA_PATH" ]; then
-            echo "ERROR: No se encontró el IPA"
+            echo "ERROR: No se encontró el IPA."
             exit 1
           fi
 
@@ -94,8 +121,7 @@ workflows:
           APP_PATH=$(find /tmp/pulse_ipa_check/Payload -maxdepth 1 -type d -name "*.app" -print -quit)
 
           if [ -z "$APP_PATH" ]; then
-            echo "ERROR: No se encontró ninguna aplicación .app dentro del IPA"
-            echo "Contenido del Payload:"
+            echo "ERROR: No se encontró ninguna aplicación .app dentro del IPA."
             ls -la /tmp/pulse_ipa_check/Payload
             exit 1
           fi
@@ -105,22 +131,11 @@ workflows:
           APP_PLIST="$APP_PATH/Info.plist"
 
           if [ ! -f "$APP_PLIST" ]; then
-            echo "ERROR: No se encontró Info.plist en:"
-            echo "$APP_PATH"
+            echo "ERROR: No se encontró Info.plist."
             exit 1
           fi
 
-          echo "INFO.PLIST: $APP_PLIST"
-
           echo "=== COMPROBANDO VERSIONES ==="
-
-          /usr/libexec/PlistBuddy \
-            -c "Print :CFBundleShortVersionString" \
-            "$APP_PLIST"
-
-          /usr/libexec/PlistBuddy \
-            -c "Print :CFBundleVersion" \
-            "$APP_PLIST"
 
           VERSION=$(/usr/libexec/PlistBuddy \
             -c "Print :CFBundleShortVersionString" \
@@ -136,16 +151,16 @@ workflows:
           echo "======================================"
 
           if [ "$VERSION" != "1.0" ]; then
-            echo "ERROR: La versión debe ser 1.0"
+            echo "ERROR: La versión debe ser 1.0."
             exit 1
           fi
 
-          if [ "$BUILD" != "2" ]; then
-            echo "ERROR: El build debe ser 2"
+          if [ "$BUILD" != "3" ]; then
+            echo "ERROR: El build debe ser 3."
             exit 1
           fi
 
-          echo "OK: IPA contiene versión 1.0 (2)"
+          echo "OK: IPA contiene versión 1.0 (3)."
 
     artifacts:
       - build/ios/ipa/*.ipa
