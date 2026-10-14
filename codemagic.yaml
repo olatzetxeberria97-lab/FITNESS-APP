@@ -27,7 +27,7 @@ workflows:
           node --version
           npm --version
           echo "=== INSTALANDO DEPENDENCIAS ==="
-          npm ci
+          npm install
 
       - name: Verificar variables de Supabase
         script: |
@@ -103,7 +103,6 @@ workflows:
       - name: Establecer versión iOS
         script: |
           set -e
-
           cd "$CM_BUILD_DIR/ios/App"
 
           xcrun agvtool new-marketing-version "$APP_VERSION"
@@ -113,10 +112,11 @@ workflows:
           xcrun agvtool what-marketing-version
           xcrun agvtool what-version
 
-            - name: Crear IPA
+      - name: Crear IPA
         script: |
           set -e
           cd "$CM_BUILD_DIR"
+
           xcode-project build-ipa \
             --project ios/App/App.xcodeproj \
             --scheme App
@@ -146,6 +146,7 @@ workflows:
           fi
 
           APP_PLIST="$APP_PATH/Info.plist"
+
           VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_PLIST")
           BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_PLIST")
           BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PLIST")
@@ -180,4 +181,3 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-          
