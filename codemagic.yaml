@@ -19,7 +19,50 @@ workflows:
         distribution_type: app_store
         bundle_identifier: "com.olatz.fitnessapp"
 
-    scripts:
+      scripts:
+      - name: Diagnostico de compilacion
+        script: |
+          set -e
+          echo "========== DIAGNOSTICO PULSE =========="
+          echo "Directorio del proyecto:"
+          pwd
+          echo "Commit:"
+          if git rev-parse HEAD 2>/dev/null; then
+            echo "Repositorio Git disponible."
+          else
+            echo "No hay repositorio Git disponible en este entorno."
+          fi
+
+          for FILE in \
+            src/lib/auth.tsx \
+            src/lib/supabase.ts \
+            src/lib/auth.ts \
+            src/lib/auth.js \
+            src/components/Onboarding.tsx \
+            vite.config.ts
+          do
+            if [ -f "$FILE" ]; then
+              echo "EXISTE: $FILE"
+            else
+              echo "NO EXISTE: $FILE"
+            fi
+          done
+
+          if [ -f src/lib/auth.tsx ]; then
+            echo "========== FINAL auth.tsx =========="
+            tail -n 15 src/lib/auth.tsx
+          fi
+
+          if [ -f src/components/Onboarding.tsx ]; then
+            echo "========== INICIO Onboarding.tsx =========="
+            head -n 8 src/components/Onboarding.tsx
+          fi
+
+          if [ -f vite.config.ts ]; then
+            echo "========== vite.config.ts =========="
+            cat vite.config.ts
+          fi
+
       - name: Instalar dependencias y construir web
         script: |
           set -e
