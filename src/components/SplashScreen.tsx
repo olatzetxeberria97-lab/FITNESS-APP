@@ -1,3 +1,4 @@
+```tsx
 import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
 
@@ -163,4 +164,79 @@ export default function SplashScreen() {
               textTransform: 'uppercase',
             }}
           >
-            {current
+            {current.label}
+          </span>
+        </div>
+
+        <div
+          aria-hidden="true"
+          style={{
+            display: 'flex',
+            gap: '6px',
+            marginTop: '18px',
+          }}
+        >
+          {SPORT_FRAMES.map((sport, index) => (
+            <div
+              key={sport.label}
+              style={{
+                height: '6px',
+                width: index === frame ? '32px' : '6px',
+                borderRadius: '6px',
+                backgroundColor: index === frame ? '#00ff88' : '#383844',
+                transition: 'width 300ms ease',
+              }}
+            />
+          ))}
+        </div>
+
+        <div
+          aria-hidden="true"
+          style={{
+            width: '30px',
+            height: '30px',
+            marginTop: '30px',
+            border: '2px solid #00ff88',
+            borderTopColor: 'transparent',
+            borderRadius: '50%',
+            animation: 'pulse-spinner 0.8s linear infinite',
+          }}
+        />
+      </div>
+
+      <style>{`
+        @keyframes pulse-spinner {
+          from {
+            transform: rotate(0deg);
+          }
+
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes pulse-logo {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+
+          50% {
+            transform: scale(1.04);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
+```
