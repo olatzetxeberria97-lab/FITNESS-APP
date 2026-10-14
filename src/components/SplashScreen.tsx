@@ -1,4 +1,3 @@
-```tsx
 import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
 
@@ -179,22 +178,26 @@ export default function SplashScreen() {
         />
       </div>
 
-      <style>
-        {`
-          @keyframes pulse-spinner {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+      <style>{`
+        @keyframes pulse-spinner {
+          from {
+            transform: rotate(0deg);
           }
 
-          @media (prefers-reduced-motion: reduce) {
-            * {
-              animation-duration: 0.01ms !important;
-              transition-duration: 0.01ms !important;
-            }
+          to {
+            transform: rotate(360deg);
           }
-        `}
-      </style>
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }
-```
