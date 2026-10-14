@@ -1,4 +1,3 @@
-```tsx
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { I18nProvider, type Tab } from '@/lib/i18n';
@@ -117,7 +116,7 @@ function AppContent() {
     if (!notificationsSupported()) return;
 
     if (profile.notifications_enabled && getPermission() === 'default') {
-      import('@/lib/notifications').then(({ requestPermission }) =>
+      void import('@/lib/notifications').then(({ requestPermission }) =>
         requestPermission(),
       );
     }
@@ -173,4 +172,3 @@ function App() {
 }
 
 export default App;
-```
