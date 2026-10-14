@@ -113,14 +113,11 @@ workflows:
           xcrun agvtool what-marketing-version
           xcrun agvtool what-version
 
-      - name: Crear IPA
+            - name: Crear IPA
         script: |
           set -e
-
           cd "$CM_BUILD_DIR"
-
-          xcode-project build-ipa
-          ```yaml
+          xcode-project build-ipa \
             --project ios/App/App.xcodeproj \
             --scheme App
 
@@ -136,12 +133,9 @@ workflows:
             exit 1
           fi
 
-          echo "IPA generado: $IPA_PATH"
-
           CHECK_DIR="/tmp/pulse_ipa_check"
           rm -rf "$CHECK_DIR"
           mkdir -p "$CHECK_DIR"
-
           unzip -q "$IPA_PATH" -d "$CHECK_DIR"
 
           APP_PATH=$(find "$CHECK_DIR/Payload" -maxdepth 1 -type d -name "*.app" -print -quit)
@@ -152,15 +146,9 @@ workflows:
           fi
 
           APP_PLIST="$APP_PATH/Info.plist"
-
-          VERSION=$(/usr/libexec/PlistBuddy \
-            -c "Print :CFBundleShortVersionString" "$APP_PLIST")
-
-          BUILD=$(/usr/libexec/PlistBuddy \
-            -c "Print :CFBundleVersion" "$APP_PLIST")
-
-          BUNDLE_ID=$(/usr/libexec/PlistBuddy \
-            -c "Print :CFBundleIdentifier" "$APP_PLIST")
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP_PLIST")
+          BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_PLIST")
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PLIST")
 
           echo "=== DATOS DE LA APLICACIÓN ==="
           echo "Versión: $VERSION"
@@ -168,17 +156,17 @@ workflows:
           echo "Bundle ID: $BUNDLE_ID"
 
           if [ "$VERSION" != "$APP_VERSION" ]; then
-            echo "ERROR: La versión del IPA no coincide."
+            echo "ERROR: La versión no coincide."
             exit 1
           fi
 
           if [ "$BUILD" != "$BUILD_NUMBER" ]; then
-            echo "ERROR: El número de compilación del IPA no coincide."
+            echo "ERROR: El número de compilación no coincide."
             exit 1
           fi
 
           if [ "$BUNDLE_ID" != "$PACKAGE_ID" ]; then
-            echo "ERROR: El identificador de la aplicación no coincide."
+            echo "ERROR: El Bundle ID no coincide."
             exit 1
           fi
 
@@ -192,3 +180,4 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+          
