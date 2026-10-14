@@ -178,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [initialize, loadProfile]);
 
-  async function refreshProfile() {
+  async function refreshProfile(): Promise<void> {
     if (!session?.user) {
       return;
     }
@@ -186,6 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const nextProfile = await loadProfile(session.user.id);
       setProfile(nextProfile);
+
       setInitializationError(
         nextProfile
           ? null
@@ -201,11 +202,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         message:
           'No se pudo actualizar tu perfil. Comprueba tu conexión y vuelve a intentarlo.',
       });
+
       throw new Error('No se pudo actualizar el perfil.');
     }
   }
 
-  async function signOut() {
+  async function signOut(): Promise<void> {
     if (!supabaseConfigError) {
       const { error } = await supabase.auth.signOut();
 
@@ -244,4 +246,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
 
- 
+  if (!ctx) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+
+  return ctx;
+}
+```
