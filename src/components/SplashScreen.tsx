@@ -13,7 +13,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setFrame((prev) => (prev + 1) % SPORT_FRAMES.length);
+      setFrame((previousFrame) => (previousFrame + 1) % SPORT_FRAMES.length);
     }, 600);
 
     return () => window.clearInterval(interval);
@@ -26,7 +26,6 @@ export default function SplashScreen() {
       role="status"
       aria-label="Cargando PULSE"
       style={{
-        minHeight: '100vh',
         minHeight: '100dvh',
         width: '100%',
         display: 'flex',
@@ -37,7 +36,9 @@ export default function SplashScreen() {
         overflow: 'hidden',
         backgroundColor: '#0a0a0f',
         color: '#ffffff',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        boxSizing: 'border-box',
+        padding: '16px',
       }}
     >
       <div
@@ -83,6 +84,7 @@ export default function SplashScreen() {
         }}
       >
         <div
+          aria-hidden="true"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -93,11 +95,15 @@ export default function SplashScreen() {
             background: 'linear-gradient(135deg, #00ff88, #00e5ff)',
             boxShadow: '0 0 35px rgba(0, 255, 136, 0.2)',
             marginBottom: '24px',
+            animation: 'pulse-logo 1.8s ease-in-out infinite',
           }}
         >
           <Activity
-            aria-hidden="true"
-            style={{ width: '48px', height: '48px', color: '#0a0a0f' }}
+            style={{
+              width: '48px',
+              height: '48px',
+              color: '#0a0a0f',
+            }}
             strokeWidth={2.5}
           />
         </div>
@@ -116,6 +122,18 @@ export default function SplashScreen() {
           PULSE
         </h1>
 
+        <p
+          style={{
+            margin: '8px 0 0',
+            color: '#a0a0ad',
+            fontSize: '12px',
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+          }}
+        >
+          Entrena a tu ritmo
+        </p>
+
         <div
           style={{
             minHeight: '90px',
@@ -128,7 +146,10 @@ export default function SplashScreen() {
         >
           <span
             aria-hidden="true"
-            style={{ fontSize: '42px', marginBottom: '6px' }}
+            style={{
+              fontSize: '42px',
+              marginBottom: '6px',
+            }}
           >
             {current.emoji}
           </span>
@@ -142,62 +163,4 @@ export default function SplashScreen() {
               textTransform: 'uppercase',
             }}
           >
-            {current.label}
-          </span>
-        </div>
-
-        <div
-          aria-hidden="true"
-          style={{ display: 'flex', gap: '6px', marginTop: '18px' }}
-        >
-          {SPORT_FRAMES.map((_, index) => (
-            <div
-              key={index}
-              style={{
-                height: '6px',
-                width: index === frame ? '32px' : '6px',
-                borderRadius: '6px',
-                backgroundColor: index === frame ? '#00ff88' : '#383844',
-                transition: 'width 300ms ease',
-              }}
-            />
-          ))}
-        </div>
-
-        <div
-          aria-hidden="true"
-          style={{
-            width: '30px',
-            height: '30px',
-            marginTop: '30px',
-            border: '2px solid #00ff88',
-            borderTopColor: 'transparent',
-            borderRadius: '50%',
-            animation: 'pulse-spinner 0.8s linear infinite',
-          }}
-        />
-      </div>
-
-      <style>{`
-        @keyframes pulse-spinner {
-          from {
-            transform: rotate(0deg);
-          }
-
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          *,
-          *::before,
-          *::after {
-            animation-duration: 0.01ms !important;
-            transition-duration: 0.01ms !important;
-          }
-        }
-      `}</style>
-    </main>
-  );
-}
+            {current
