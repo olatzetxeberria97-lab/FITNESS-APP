@@ -120,3 +120,75 @@ workflows:
           cd "$CM_BUILD_DIR"
 
           xcode-project build-ipa
+          ```yaml
+            --project ios/App/App.xcodeproj \
+            --scheme App
+
+      - name: Verificar IPA generado
+        script: |
+          set -e
+
+          echo "=== BUSCANDO IPA ==="
+          IPA_PATH=$(find "$CM_BUILD_DIR/build/ios/ipa" -name "*.ipa" -print -quit)
+
+          if [ -z "$IPA_PATH" ]; then
+            echo "ERROR: No se ha generado ningún IPA."
+            exit 1
+          fi
+
+          echo "IPA generado: $IPA_PATH"
+
+          CHECK_DIR="/tmp/pulse_ipa_check"
+          rm -rf "$CHECK_DIR"
+          mkdir -p "$CHECK_DIR"
+
+          unzip -q "$IPA_PATH" -d "$CHECK_DIR"
+
+          APP_PATH=$(find "$CHECK_DIR/Payload" -maxdepth 1 -type d -name "*.app" -print -quit)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No se encuentra la aplicación dentro del IPA."
+            exit 1
+          fi
+
+          APP_PLIST="$APP_PATH/Info.plist"
+
+          VERSION=$(/usr/libexec/PlistBuddy \
+            -c "Print :CFBundleShortVersionString" "$APP_PLIST")
+
+          BUILD=$(/usr/libexec/PlistBuddy \
+            -c "Print :CFBundleVersion" "$APP_PLIST")
+
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy \
+            -c "Print :CFBundleIdentifier" "$APP_PLIST")
+
+          echo "=== DATOS DE LA APLICACIÓN ==="
+          echo "Versión: $VERSION"
+          echo "Build: $BUILD"
+          echo "Bundle ID: $BUNDLE_ID"
+
+          if [ "$VERSION" != "$APP_VERSION" ]; then
+            echo "ERROR: La versión del IPA no coincide."
+            exit 1
+          fi
+
+          if [ "$BUILD" != "$BUILD_NUMBER" ]; then
+            echo "ERROR: El número de compilación del IPA no coincide."
+            exit 1
+          fi
+
+          if [ "$BUNDLE_ID" != "$PACKAGE_ID" ]; then
+            echo "ERROR: El identificador de la aplicación no coincide."
+            exit 1
+          fi
+
+          echo "OK: Verificación del IPA completada."
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcode_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
