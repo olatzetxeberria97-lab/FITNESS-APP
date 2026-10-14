@@ -1,3 +1,4 @@
+```tsx
 import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
 
@@ -12,51 +13,188 @@ export default function SplashScreen() {
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = window.setInterval(() => {
       setFrame((prev) => (prev + 1) % SPORT_FRAMES.length);
     }, 600);
-    return () => clearInterval(interval);
+
+    return () => window.clearInterval(interval);
   }, []);
 
   const current = SPORT_FRAMES[frame];
 
   return (
-    <div className="min-h-screen gradient-dark flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#00ff88] opacity-[0.07] blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[#00e5ff] opacity-[0.05] blur-[100px] animate-pulse" />
+    <main
+      role="status"
+      aria-label="Cargando PULSE"
+      style={{
+        minHeight: '100vh',
+        minHeight: '100dvh',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: '#0a0a0f',
+        color: '#ffffff',
+        fontFamily: 'system-ui, sans-serif',
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '-15%',
+          left: '-15%',
+          width: '300px',
+          height: '300px',
+          borderRadius: '50%',
+          background: '#00ff88',
+          opacity: 0.07,
+          filter: 'blur(90px)',
+          pointerEvents: 'none',
+        }}
+      />
 
-      <div className="relative z-10 flex flex-col items-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl gradient-neon neon-glow mb-6 animate-scale-in">
-          <Activity className="w-12 h-12 text-black" strokeWidth={2.5} />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          bottom: '-15%',
+          right: '-15%',
+          width: '280px',
+          height: '280px',
+          borderRadius: '50%',
+          background: '#00e5ff',
+          opacity: 0.05,
+          filter: 'blur(80px)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '24px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '96px',
+            height: '96px',
+            borderRadius: '24px',
+            background: 'linear-gradient(135deg, #00ff88, #00e5ff)',
+            boxShadow: '0 0 35px rgba(0, 255, 136, 0.2)',
+            marginBottom: '24px',
+          }}
+        >
+          <Activity
+            aria-hidden="true"
+            style={{ width: '48px', height: '48px', color: '#0a0a0f' }}
+            strokeWidth={2.5}
+          />
         </div>
 
-        <h1 className="text-5xl font-black font-display tracking-tight mb-2">
-          <span className="gradient-neon-text">PULSE</span>
+        <h1
+          style={{
+            margin: 0,
+            fontSize: '48px',
+            fontWeight: 900,
+            letterSpacing: '-1.5px',
+            background: 'linear-gradient(135deg, #00ff88, #00e5ff)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          PULSE
         </h1>
 
-        <div className="h-16 flex items-center justify-center mt-4">
-          <div
-            key={frame}
-            className="flex flex-col items-center animate-fade-in"
+        <div
+          style={{
+            minHeight: '90px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: '20px',
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{ fontSize: '42px', marginBottom: '6px' }}
           >
-            <span className="text-5xl mb-1 transition-all duration-300" style={{ transform: `scale(${1 + Math.sin(frame * Math.PI / 2) * 0.1})` }}>
-              {current.emoji}
-            </span>
-            <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest font-semibold">{current.label}</span>
-          </div>
+            {current.emoji}
+          </span>
+
+          <span
+            style={{
+              color: '#a0a0ad',
+              fontSize: '12px',
+              fontWeight: 600,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+            }}
+          >
+            {current.label}
+          </span>
         </div>
 
-        <div className="flex gap-1.5 mt-6">
-          {SPORT_FRAMES.map((_, i) => (
+        <div
+          aria-hidden="true"
+          style={{ display: 'flex', gap: '6px', marginTop: '18px' }}
+        >
+          {SPORT_FRAMES.map((_, index) => (
             <div
-              key={i}
-              className={`h-1.5 rounded-full transition-all duration-300 ${i === frame ? 'w-8 bg-[var(--neon-green)]' : 'w-1.5 bg-[var(--border-subtle)]'}`}
+              key={index}
+              style={{
+                height: '6px',
+                width: index === frame ? '32px' : '6px',
+                borderRadius: '6px',
+                backgroundColor: index === frame ? '#00ff88' : '#383844',
+                transition: 'width 300ms ease',
+              }}
             />
           ))}
         </div>
 
-        <div className="mt-8 w-8 h-8 border-2 border-[var(--neon-green)] border-t-transparent rounded-full animate-spin" />
+        <div
+          aria-hidden="true"
+          style={{
+            width: '30px',
+            height: '30px',
+            marginTop: '30px',
+            border: '2px solid #00ff88',
+            borderTopColor: 'transparent',
+            borderRadius: '50%',
+            animation: 'pulse-spinner 0.8s linear infinite',
+          }}
+        />
       </div>
-    </div>
+
+      <style>
+        {`
+          @keyframes pulse-spinner {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            * {
+              animation-duration: 0.01ms !important;
+              transition-duration: 0.01ms !important;
+            }
+          }
+        `}
+      </style>
+    </main>
   );
 }
+```
