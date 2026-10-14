@@ -1,4 +1,3 @@
-```yaml
 workflows:
   ios-workflow:
     name: PULSE - Compilación automática de iOS
