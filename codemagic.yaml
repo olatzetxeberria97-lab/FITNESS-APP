@@ -95,6 +95,21 @@ workflows:
           set -e
           npx cap sync ios
 
+      - name: Preservar icono personalizado de PULSE
+        script: |
+          set -e
+          ICON_SRC="resources/app-icon.png"
+          ICON_DEST="ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
+
+          if [ ! -f "$ICON_SRC" ]; then
+            echo "ERROR: No se encuentra $ICON_SRC"
+            exit 1
+          fi
+
+          mkdir -p "$(dirname "$ICON_DEST")"
+          cp "$ICON_SRC" "$ICON_DEST"
+          echo "OK: Icono personalizado copiado a AppIcon.appiconset"
+
       - name: Configurar firma de iOS
         script: |
           set -e

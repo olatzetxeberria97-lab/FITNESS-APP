@@ -68,5 +68,9 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local durante tu actividad.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PULSE necesita acceso a tu ubicación para registrar tus entrenamientos con GPS y mostrar el clima local durante tu actividad.</string>
 </dict>
 </plist>
