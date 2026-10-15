@@ -1,4 +1,3 @@
-```tsx
 import {
   createContext,
   useCallback,
@@ -252,4 +251,3 @@ export function useAuth() {
 
   return ctx;
 }
-```

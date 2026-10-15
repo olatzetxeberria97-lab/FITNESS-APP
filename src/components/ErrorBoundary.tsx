@@ -1,4 +1,3 @@
-```tsx
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
@@ -77,4 +76,3 @@ export default class ErrorBoundary extends Component<
     return this.props.children;
   }
 }
-```

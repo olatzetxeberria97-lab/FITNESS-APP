@@ -1,4 +1,3 @@
-```tsx
 import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
 
@@ -132,4 +131,3 @@ export default function SplashScreen() {
     </main>
   );
 }
-```
