@@ -50,9 +50,7 @@ export default function PaywallModal({ open, onClose, contextLabel }: PaywallMod
     setRestoreStatus('restoring');
     try {
       const { data } = await supabase
-        .from('profiles')
-        .select('subscription_tier, premium_expires_at, is_premium')
-        .eq('id', user.id)
+        .rpc('get_my_profile')
         .maybeSingle();
 
       if (data && (data.is_premium || isPremiumTier(data.subscription_tier))) {

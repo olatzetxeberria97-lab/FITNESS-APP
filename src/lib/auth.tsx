@@ -38,15 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useState<AuthInitializationError | null>(null);
 
   const loadProfile = useCallback(
-    async (userId: string): Promise<Profile | null> => {
+    async (): Promise<Profile | null> => {
       if (supabaseConfigError) {
         throw new Error(supabaseConfigError);
       }
 
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
+        .rpc('get_my_profile')
         .maybeSingle();
 
       if (error) {
@@ -91,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       phase = 'profile';
 
-      const nextProfile = await loadProfile(nextSession.user.id);
+      const nextProfile = await loadProfile();
       setProfile(nextProfile);
 
       if (!nextProfile) {
@@ -148,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         void (async () => {
           try {
-            const nextProfile = await loadProfile(nextSession.user.id);
+            const nextProfile = await loadProfile();
             setProfile(nextProfile);
 
             if (!nextProfile) {
@@ -183,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const nextProfile = await loadProfile(session.user.id);
+      const nextProfile = await loadProfile();
       setProfile(nextProfile);
 
       setInitializationError(

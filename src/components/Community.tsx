@@ -71,13 +71,13 @@ export default function Community() {
     const { data: friendships } = await supabase.from('friendships').select('id, friend_id').eq('user_id', user.id);
     const friendIds = (friendships || []).map((f: { friend_id: string }) => f.friend_id);
     if (friendIds.length === 0) { setFriends([]); return; }
-    const { data: friendProfiles } = await supabase.from('profiles').select('*').in('id', friendIds);
+    const { data: friendProfiles } = await supabase.from('profiles').select('id, display_name, avatar_color, goal').in('id', friendIds);
     setFriends((friendProfiles as Profile[]).map((p) => ({ ...p, friendship_id: friendships?.find((f: { friend_id: string }) => f.friend_id === p.id)?.id })));
   }, [user]);
 
   const loadRequests = useCallback(async () => {
     if (!user) return;
-    const { data: reqs } = await supabase.from('friend_requests').select('*, sender:profiles!friend_requests_sender_id_fkey(*)').eq('receiver_id', user.id).eq('status', 'pending');
+    const { data: reqs } = await supabase.from('friend_requests').select('*, sender:profiles!friend_requests_sender_id_fkey(id, display_name, avatar_color)').eq('receiver_id', user.id).eq('status', 'pending');
     setRequests((reqs as (FriendRequest & { sender: Profile })[]) || []);
   }, [user]);
 
@@ -110,7 +110,7 @@ export default function Community() {
   async function searchUsers() {
     if (!searchQuery.trim() || !user) return;
     setSearching(true);
-    const { data } = await supabase.from('profiles').select('*').ilike('display_name', `%${searchQuery.trim()}%`).neq('id', user.id).limit(10);
+    const { data } = await supabase.from('profiles').select('id, display_name, avatar_color, goal').ilike('display_name', `%${searchQuery.trim()}%`).neq('id', user.id).limit(10);
     setSearchResults((data as Profile[]) || []);
     setSearching(false);
   }

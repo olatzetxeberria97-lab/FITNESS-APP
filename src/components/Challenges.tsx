@@ -44,10 +44,10 @@ export default function Challenges() {
 
     // Load participants + creator for each
     const enriched = await Promise.all(allChallenges.map(async (c) => {
-      const { data: creator } = await supabase.from('profiles').select('*').eq('id', c.creator_id).maybeSingle();
+      const { data: creator } = await supabase.from('profiles').select('id, display_name, avatar_color').eq('id', c.creator_id).maybeSingle();
       const { data: parts } = await supabase.from('challenge_participants').select('*').eq('challenge_id', c.id);
       const partUsers = await Promise.all((parts || []).map(async (p: ChallengeParticipant) => {
-        const { data: u } = await supabase.from('profiles').select('*').eq('id', p.user_id).maybeSingle();
+        const { data: u } = await supabase.from('profiles').select('id, display_name, avatar_color').eq('id', p.user_id).maybeSingle();
         return { ...p, user: u as Profile };
       }));
       return { ...c, creator: creator as Profile, participants: partUsers };
