@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Users, Swords, Trophy, Check, Loader2, Crown, Dumbbell, Plus, X, RefreshCw, Scale, Globe, Target, Watch, Sparkles, BellRing, AlertTriangle, Trash2 } from 'lucide-react';
+import { Bell, Users, Swords, Trophy, Check, Loader2, Crown, Dumbbell, Plus, X, RefreshCw, Scale, Globe, Target, Watch, Sparkles, BellRing, AlertTriangle, Trash2, Info } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -619,6 +619,14 @@ export default function Settings({ onNavigate }: { onNavigate: (tab: string) => 
             <span className="text-sm text-[var(--text-secondary)]">{t('set.name')}</span>
             <span className="text-sm font-semibold">{profile?.display_name}</span>
           </div>
+        </div>
+
+        {/* Body stats edit hint */}
+        <div className="mt-4 p-3 rounded-xl bg-[var(--neon-green)]/5 border border-[var(--neon-green)]/20">
+          <p className="text-xs text-[var(--text-secondary)] flex items-start gap-2">
+            <Info className="w-3.5 h-3.5 text-[var(--neon-green)] flex-shrink-0 mt-0.5" />
+            {t('set.editBodyStatsInProfile')}
+          </p>
         </div>
 
         {/* Delete account — discreet but accessible */}

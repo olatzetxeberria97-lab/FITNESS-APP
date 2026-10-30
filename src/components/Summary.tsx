@@ -1,10 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Activity, Clock, Footprints, Mountain, Flame, TrendingUp, Award, Watch, CloudRain, Home, Moon, Bed, Trophy, Lock, Sparkles } from 'lucide-react';
+import { Activity, Clock, Footprints, Mountain, Flame, TrendingUp, Award, Watch, CloudRain, Home, Moon, Bed, Trophy, Lock, Sparkles, Plus, X, Scale } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { getMondayString } from '@/lib/planGenerator';
-import { ACHIEVEMENT_DEFINITIONS, type Workout } from '@/lib/types';
+import { ACHIEVEMENT_DEFINITIONS, type Workout, type WeightLog } from '@/lib/types';
+import { saveWeightLog } from '@/lib/weight';
+import WeightChart from '@/components/WeightChart';
 
 const OMS_WEEKLY_MIN_GOAL = 300;
 const OMS_DAILY_MIN_GOAL = 30;
@@ -20,6 +23,13 @@ export default function Summary() {
   const [showSleepSuggestion, setShowSleepSuggestion] = useState(false);
   const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
   const [pastWeeks, setPastWeeks] = useState<{weekStart: string; minutes: number; workouts: number; goalMet: boolean}[]>([]);
+  const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
+  const [weightLoadError, setWeightLoadError] = useState(false);
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [newWeight, setNewWeight] = useState('');
+  const [savingWeight, setSavingWeight] = useState(false);
+  const [weightError, setWeightError] = useState<string | null>(null);
+  const [weightDuplicate, setWeightDuplicate] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -71,6 +81,15 @@ export default function Summary() {
     }
     setPastWeeks(pastWeeksData);
 
+    const { data: wlData, error: wlErr } = await supabase.from('weight_logs').select('*').eq('user_id', user.id).order('logged_at', { ascending: true });
+    if (wlErr) {
+      setWeightLoadError(true);
+      setWeightLogs([]);
+    } else {
+      setWeightLoadError(false);
+      setWeightLogs((wlData as WeightLog[]) || []);
+    }
+
     setLoading(false);
 
     const { data: ach } = await supabase.from('achievements').select('achievement_key').eq('user_id', user.id);
@@ -117,6 +136,30 @@ export default function Summary() {
     await refreshProfile();
     if (quality === 'poor' || quality === 'fair') setShowSleepSuggestion(true);
     else setShowSleepSuggestion(false);
+  }
+
+  async function saveWeight() {
+    if (!user || !newWeight) return;
+    const weight = parseFloat(newWeight);
+    if (isNaN(weight) || weight <= 0 || weight > 500) {
+      setWeightError(t('weight.invalid'));
+      return;
+    }
+    setSavingWeight(true);
+    setWeightError(null);
+    setWeightDuplicate(false);
+    const result = await saveWeightLog(user.id, weight, refreshProfile);
+    setSavingWeight(false);
+    if (!result.ok) {
+      setWeightError(result.error === 'weight_invalid' ? t('weight.invalid') : t('weight.saveError'));
+      return;
+    }
+    if (result.duplicate) {
+      setWeightDuplicate(true);
+    }
+    setNewWeight('');
+    setShowWeightModal(false);
+    loadData();
   }
 
   async function markSoftRest() {
@@ -229,6 +272,9 @@ export default function Summary() {
         <div className="glass-card rounded-2xl p-4"><Activity className="w-5 h-5 text-[var(--neon-green)] mb-2" /><p className="text-2xl font-black font-display">{workoutCount}</p><p className="text-xs text-[var(--text-secondary)]">{t('sum.workouts')}</p></div>
       </div>
 
+      {/* Weight evolution */}
+      <WeightChart weightLogs={weightLogs} loadError={weightLoadError} onRegisterWeight={() => setShowWeightModal(true)} />
+
       {/* Smartwatch sync */}
       <div className="glass-card rounded-2xl p-4">
         <div className="flex items-center gap-3">
@@ -309,6 +355,24 @@ export default function Summary() {
           })}
         </div>
       </div>
+      {/* Weight modal */}
+      {showWeightModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => !savingWeight && setShowWeightModal(false)}>
+          <div className="glass-card rounded-3xl p-6 w-full max-w-sm animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold font-display">{t('cal.registerWeight')}</h3>
+              <button onClick={() => !savingWeight && setShowWeightModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-[var(--text-secondary)] text-sm mb-4">Hoy, {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</p>
+            <input type="number" step="0.1" value={newWeight} onChange={(e) => { setNewWeight(e.target.value); setWeightError(null); setWeightDuplicate(false); }} placeholder={t('cal.weightInKg')} autoFocus disabled={savingWeight} className="w-full bg-[var(--bg-darkest)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-2xl font-bold text-center focus:outline-none focus:border-[var(--neon-green)] transition-all disabled:opacity-50" />
+            {weightError && <p className="text-xs text-red-400 mt-2 animate-fade-in">{weightError}</p>}
+            <button onClick={saveWeight} disabled={!newWeight || savingWeight} className="w-full mt-4 gradient-neon text-black font-bold py-3.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-30 flex items-center justify-center gap-2">
+              {savingWeight ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />} {t('cal.saveWeight')}
+            </button>
+            {weightDuplicate && !weightError && <p className="text-xs text-[var(--neon-green)] mt-2 animate-fade-in">{t('weight.updatedToday')}</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
